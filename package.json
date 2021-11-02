@@ -25,9 +25,13 @@
     "moleculer-repl": "^0.6.6"
   },
   "dependencies": {
+    "bcrypt": "^5.0.1",
+    "dotenv": "^10.0.0",
     "moleculer-web": "^0.10.2",
     "moleculer-db": "^0.8.15",
     "moleculer-db-adapter-mongo": "^0.4.13",
+    "moleculer-http-client": "^0.4.2",
+    "moleculer-mail": "^1.2.5",
     "nats": "^2.2.0",
     "moleculer": "^0.14.16"
   },
