@@ -5,7 +5,8 @@
   "scripts": {
     "build": "moleculer-runner --repl",
     "dev": "moleculer-runner --repl --hot services/**/*.service.js",
-    "start": "moleculer-runner",
+    "start": "moleculer-runner --config moleculer.config.js services/**/*.service.js",
+    "prod": "moleculer-runner services/**/*.service.js",
     "cli": "moleculer connect NATS",
     "ci": "jest --watch",
     "test": "jest --coverage",
