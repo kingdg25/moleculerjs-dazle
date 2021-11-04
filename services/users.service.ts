@@ -12,7 +12,7 @@ import HTTPClientService from "moleculer-http-client";
 const MailService = require("moleculer-mail");
 
 dotenv.config();
-const client = new OAuth2Client(process.env.GOOGLE_ID, process.env.GOOGLE_SECRET);
+const client = new OAuth2Client(process.env.GOOGLE_ID);
 
 export default class UsersService extends Service{
 
@@ -315,7 +315,7 @@ export default class UsersService extends Service{
         
                                 const ticket = await client.verifyIdToken({
                                     idToken: entity.token,
-                                    // audience: process.env.GOOGLE_ID,
+                                    audience: process.env.GOOGLE_ID
                                 });
                                 
                                 console.log('ticket ticker', ticket);
