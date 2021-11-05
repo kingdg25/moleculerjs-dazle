@@ -202,13 +202,13 @@ export default class UsersService extends Service{
                                 if (found.type == 'email&pass'){
                                     const genCode = Math.random().toString(36).substr(2, 4);
             
-                                    this.send({
-                                        to: entity.email,
-                                        subject: "Verification Code",
-                                        html: "This is your verification code <b>" +
-                                            genCode +
-                                            "</b>.",
-                                    });
+                                    // this.send({
+                                    //     to: entity.email,
+                                    //     subject: "Verification Code",
+                                    //     html: "This is your verification code <b>" +
+                                    //         genCode +
+                                    //         "</b>.",
+                                    // });
             
                                     const doc = await this.adapter.updateById(
                                         found._id, 
@@ -216,6 +216,8 @@ export default class UsersService extends Service{
                                     );
                                     const json = await this.transformDocuments(ctx, ctx.params, doc);
                                     await this.entityChanged("updated", json, ctx);
+                                    
+                                    json.code = genCode;
                                     success = true;
             
                                     return { success: success, user: json, status: "Success" };
@@ -251,7 +253,7 @@ export default class UsersService extends Service{
                                 email: entity.email,
                                 code: entity.code,
                             });
-                            
+
                             if (found) {
                                 const doc = await this.adapter.updateById(
                                     found._id,
