@@ -162,22 +162,15 @@ export default class UsersService extends Service{
                         const found = await this.adapter.findOne({
                             email: auth.email,
                         });
-        
+
                         if (found) {
-                            if (
-                                !(await bcrypt.compare(
-                                    auth.password,
-                                    found.password
-                                ))
-                            ) {
-                                return { success: success, user: auth, status: "Failed" };
+                            if ( (await bcrypt.compare(auth.password, found.password)) ) {
+                                success = true;
+                                return { success: success, user: found, status: "Success" };
                             }
-                        } else {
-                            return { success: success, user: auth, status: "Failed" };
                         }
-                        success = true;
-        
-                        return { success: success, user: found, status: "Success" };
+
+                        return { success: success, user: auth, status: "Failed" };
                     }
                 },
         
@@ -203,35 +196,35 @@ export default class UsersService extends Service{
                             const found = await this.adapter.findOne({
                                 email: entity.email,
                             });
-                            if (found.type == 'email&pass') {
-                                const genCode = Math.random().toString(36).substr(2, 4);
-        
-                                console.log(genCode, process.env.EMAIL_USER, process.env.EMAIL_PASS);
-        
-                                this.send({
-                                    to: entity.email,
-                                    subject: "Verification Code",
-                                    html: "This is your verification code <b>" +
-                                        genCode +
-                                        "</b>.",
-                                });
-        
-                                const doc = await this.adapter.updateById(
-                                    found._id, 
-                                    { $set: { code: genCode } }
-                                );
-                                const json = await this.transformDocuments(ctx, ctx.params, doc);
-                                await this.entityChanged("updated", json, ctx);
-                                success = true;
-        
-                                return { success: success, user: json, status: "Success" };
-        
-                            } else {
-                                return { success: success, status: "not found" };
+
+                            if (found) {
+
+                                if (found.type == 'email&pass'){
+                                    const genCode = Math.random().toString(36).substr(2, 4);
+            
+                                    this.send({
+                                        to: entity.email,
+                                        subject: "Verification Code",
+                                        html: "This is your verification code <b>" +
+                                            genCode +
+                                            "</b>.",
+                                    });
+            
+                                    const doc = await this.adapter.updateById(
+                                        found._id, 
+                                        { $set: { code: genCode } }
+                                    );
+                                    const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                    await this.entityChanged("updated", json, ctx);
+                                    success = true;
+            
+                                    return { success: success, user: json, status: "Success" };
+                                
+                                }
                             }
-                        } else {
-                            return { success: success, status: "not found" };
                         }
+
+                        return { success: success, status: "no found" };
                     }
                 },
         
@@ -258,6 +251,7 @@ export default class UsersService extends Service{
                                 email: entity.email,
                                 code: entity.code,
                             });
+                            
                             if (found) {
                                 const doc = await this.adapter.updateById(
                                     found._id,
@@ -277,8 +271,9 @@ export default class UsersService extends Service{
         
                                 return { user: json, success: success, status: "Success" };
                             }
-                            return { success: success, status: "failed" };
                         }
+                        
+                        return { success: success, status: "failed" };
                     }
                 },
         
