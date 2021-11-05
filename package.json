@@ -12,7 +12,13 @@
     "lint": "eslint --ext .js,.ts .",
     "dc:up": "docker-compose up --build -d",
     "dc:logs": "docker-compose logs -f",
-    "dc:down": "docker-compose down"
+    "dc:down": "docker-compose down",
+    "prepare": "npm run build",
+    "prettier:base": "prettier --parser typescript",
+    "prettier:fix": "npm run prettier:base -- --write \"services/**/*.{ts,tsx}\"",
+    "prettier:fixMixin": "npm run prettier:base -- --write \"mixins/**/*.{ts,tsx}\"",
+    "prettier:fixStorage": "npm run prettier:base -- --write \"storage/**/*.{ts,tsx}\"",
+    "prettier:check": "prettier --check"
   },
   "keywords": [
     "microservices",
@@ -26,6 +32,7 @@
     "eslint": "^6.8.0",
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-prefer-arrow": "^1.2.2",
+    "husky": "^7.0.4",
     "jest": "^25.1.0",
     "jest-cli": "^25.1.0",
     "moleculer-repl": "^0.6.2",
