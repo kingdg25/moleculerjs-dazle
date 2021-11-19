@@ -405,7 +405,7 @@ export default class UsersService extends Service{
                                 found._id,
                                 {
                                     $set: {
-                                        new_user: auth.new_user,
+                                        is_new_user: auth.is_new_user,
                                     },
                                 }
                             );
