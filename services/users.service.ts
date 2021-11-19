@@ -55,8 +55,8 @@ export default class UsersService extends Service{
                     firstname: { type: "string" },
                     lastname: { type: "string" },
                     mobile_number: { type: "string" },
-                    position: { type: "string" },
-                    license_number: { type: "string" },
+                    position: { type: "enum", values: ["Broker", "Salesperson"] },
+                    license_number: { type: "string", optional: true },
                     email: { type: "email" },
                     password: {
                         type: "string",
@@ -69,6 +69,8 @@ export default class UsersService extends Service{
                         optional: true,
                     },
                     is_new_user: { type: "boolean", default: true },
+                    permission: { type: "boolean", default: false },
+                    verified: { type: "boolean", default: false },
                     // createdAt: { type: "number", readonly: true, onCreate: () => Date.now() },
                     // updatedAt: { type: "number", readonly: true, onUpdate: () => Date.now() },
                 },
@@ -418,6 +420,37 @@ export default class UsersService extends Service{
                         }
 
                         return { success: success, user: auth, status: "Failed" };
+                    }
+                },
+
+                /**
+                 * check broker license number
+                 *
+                 * @param {String} license_number - Broker license number
+                 */
+                 checkLicenseNumber: {
+                    rest: {
+                        method: "POST",
+                        path: "/check-license-number"
+                    },
+                    params: {
+                        license_number: { type: "string" },
+                    },
+                    /** @param {Context} ctx  */
+                    async handler(ctx) {
+                        let success = false;
+                        const license_number = ctx.params.license_number;
+        
+                        const found = await this.adapter.findOne({
+                            position: 'Broker',
+                            license_number: license_number,
+                        });
+
+                        if (found) {
+                            return { success: success, broker: found, status: "Success" };
+                        }
+
+                        return { success: success, status: "It seems your Broker is not yet with Dazle. Invite your Broker to complete your registration." };
                     }
                 }
 
