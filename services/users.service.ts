@@ -45,7 +45,8 @@ export default class UsersService extends Service{
                     "firstname",
                     "lastname",
                     "email",
-                    "token"
+                    "token",
+                    "is_new_user"
                 ],
 				logging: true,
 
@@ -53,6 +54,9 @@ export default class UsersService extends Service{
                 entityValidator: {
                     firstname: { type: "string" },
                     lastname: { type: "string" },
+                    mobile_number: { type: "string" },
+                    position: { type: "string" },
+                    license_number: { type: "string" },
                     email: { type: "email" },
                     password: {
                         type: "string",
@@ -64,6 +68,7 @@ export default class UsersService extends Service{
                         virtual: true,
                         optional: true,
                     },
+                    is_new_user: { type: "boolean", default: true },
                     // createdAt: { type: "number", readonly: true, onCreate: () => Date.now() },
                     // updatedAt: { type: "number", readonly: true, onUpdate: () => Date.now() },
                 },
@@ -119,9 +124,10 @@ export default class UsersService extends Service{
                                 email: entity.email,
                             });
                             if (found) {
-                                return Promise.reject({
-                                    status: "Email Exist",
-                                });
+                                return {
+                                    success: false,
+                                    status: "Email already exist",
+                                };
                             }
                         }
         
@@ -137,7 +143,7 @@ export default class UsersService extends Service{
                         const json = await this.transformDocuments(ctx, ctx.params, doc);
                         await this.entityChanged("created", json, ctx);
         
-                        return json;
+                        return { success: true, user: json, status: "Success" };
                     }
                 },
         
@@ -166,11 +172,11 @@ export default class UsersService extends Service{
                         if (found) {
                             if ( (await bcrypt.compare(auth.password, found.password)) ) {
                                 success = true;
-                                return { success: success, user: found, status: "Success" };
+                                return { success: success, user: found, status: "Login success" };
                             }
                         }
 
-                        return { success: success, user: auth, status: "Failed" };
+                        return { success: success, user: auth, status: "Login failed" };
                     }
                 },
         
@@ -226,7 +232,7 @@ export default class UsersService extends Service{
                             }
                         }
 
-                        return { success: success, status: "no found" };
+                        return { success: success, status: "Sorry we can't find an account with this email address" };
                     }
                 },
         
@@ -275,7 +281,7 @@ export default class UsersService extends Service{
                             }
                         }
                         
-                        return { success: success, status: "failed" };
+                        return { success: success, status: "Sorry we can't find an account with this email address" };
                     }
                 },
         
@@ -303,7 +309,7 @@ export default class UsersService extends Service{
         
                         if (found) {
                             success = true;
-                            return { success: success, user: found, status: "already na register success" };
+                            return { success: success, user: found, status: "Already registered" };
                         }
                         else{
                             if (entity.type === "gmail") {
@@ -331,11 +337,11 @@ export default class UsersService extends Service{
                                     await this.entityChanged("created", json, ctx);
                                     success = true;
         
-                                    return { user: json, success: success, status: "google Success" };
+                                    return { user: json, success: success, status: "Google login Success" };
                                 
                                 }
                                 else {
-                                    return { success: success, status: "google fail" };
+                                    return { success: success, status: "Google login fail" };
                                 }
                             }
                             else if (entity.type === "facebook") {
@@ -358,19 +364,64 @@ export default class UsersService extends Service{
                                     await this.entityChanged("created", json, ctx);
                                     success = true;
         
-                                    return { user: json, success: success, status: "facebook Success" };
+                                    return { user: json, success: success, status: "facebook login Success" };
                                 
                                 }
                                 else {
-                                    return { success: success, status: "facebook failed" };
+                                    return { success: success, status: "Facebook login failed" };
                                 }
                             }
                             else {
-                                return { success: success, status: "no login type found" };
+                                return { success: success, status: "No login type found" };
                             }
                         }
                     }
+                },
+
+                /**
+                 * new user
+                 *
+                 * @param {Object} user - User entity
+                 */
+                 isNewUser: {
+                    rest: {
+                        method: "POST",
+                        path: "/is-new-user"
+                    },
+                    params: {
+                        user: { type: "object" },
+                    },
+                    /** @param {Context} ctx  */
+                    async handler(ctx) {
+                        let success = false;
+                        const auth = ctx.params.user;
+        
+                        const found = await this.adapter.findOne({
+                            email: auth.email,
+                        });
+
+                        if (found) {
+                            const doc = await this.adapter.updateById(
+                                found._id,
+                                {
+                                    $set: {
+                                        new_user: auth.new_user,
+                                    },
+                                }
+                            );
+    
+                            const json = await this.transformDocuments(ctx, ctx.params, doc);
+                            await this.entityChanged("updated", json, ctx);
+                            success = true;
+    
+                            return { success: success, user: json, status: "Success" };
+                        }
+
+                        return { success: success, user: auth, status: "Failed" };
+                    }
                 }
+
+
 			},
 			methods: {
 				/**
