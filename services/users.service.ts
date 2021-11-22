@@ -46,7 +46,8 @@ export default class UsersService extends Service{
                     "lastname",
                     "email",
                     "token",
-                    "is_new_user"
+                    "is_new_user",
+                    "invited"
                 ],
 				logging: true,
 
@@ -80,7 +81,7 @@ export default class UsersService extends Service{
                             }
                         },
                     },
-                    invited_by: { type: "array", items: "string", optional: true }, // dili pa sure
+                    invited: { type: "boolean", default: false },
                     verified: { type: "boolean", default: false },
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
@@ -214,13 +215,28 @@ export default class UsersService extends Service{
                             // check password
                             if ( (await bcrypt.compare(auth.password, found.password)) ) {
                                 // check if user is invited
-                                const invitedFound = await this.adapter.findOne({
-                                    invited_by: auth.email
+                                const foundInvited = await this.adapter.findOne({
+                                    invites: {
+                                        $elemMatch: {
+                                            email: auth.email,
+                                            invited: true
+                                        }
+                                    }
                                 });
 
-                                if (invitedFound) {
-                                    return { success: true, user: found, status: "Login success" };
+                                if ( foundInvited ) {
+                                    
+                                    const doc = await this.adapter.updateById(
+                                        found._id, 
+                                        { $set: { invited: true } }
+                                    );
+                                    const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                    await this.entityChanged("updated", json, ctx);
+
+                                    return { success: true, user: json, status: "Login success" };
                                 }
+
+                                status = "Your account status is currently pending";
                             }
                         }
 
@@ -487,45 +503,57 @@ export default class UsersService extends Service{
                     }
                 },
 
-                // /**
-                //  * invite user to dazle
-                //  *
-                //  * @param {String} email - Broker's email
-                //  * @param {String} email - Broker's email
-                //  */
-                // inviteUser: {
-                //     rest: {
-                //         method: "POST",
-                //         path: "/invite-user"
-                //     },
-                //     params: {
-                //         email: { type: "string" },
-                //     },
-                //     /** @param {Context} ctx  */
-                //     async handler(ctx) {
-                //         // check salesperson broker
-                //         const brokerFound = await this.adapter.findOne({
-                //             license_number: entity.license_number
-                //         });
-                //         if (!brokerFound){
-                //             return {
-                //                 success: false,
-                //                 status: "It seems your Broker is not yet with Dazle. Invite your Broker to complete your registration.",
-                //             };
-                //         }
+                /**
+                 * invite user to dazle
+                 *
+                 * @param {String} id - id
+                 * @param {String} invited_by_email - email
+                 */
+                invite: {
+                    rest: {
+                        method: "POST",
+                        path: "/invite"
+                    },
+                    params: {
+                        id: { type: "string" },
+                        invited_by_email: { type: "string" },
+                    },
+                    /** @param {Context} ctx  */
+                    async handler(ctx) {
+                        // check the one who's inviting the user by id
+                        const found = await this.adapter.findOne({
+                            _id: ctx.params.id
+                        });
 
-                //         // send request invite to broker
-                //         const doc = await this.adapter.updateById(
-                //             brokerFound._id,
-                //             {
-                //                 $push: {
-                //                     invites: entity.email // salesperson email
-                //                 }
-                //             }
-                //         );
-                //         console.log('send invitation to broker', doc);
-                //     }
-                // }
+                        // check also the email of user who is invited
+                        const foundInvitedUser = await this.adapter.findOne({
+                            email: ctx.params.invited_by_email
+                        });
+
+
+                        if ( found && foundInvitedUser ){
+                            // add invited user
+                            const doc = await this.adapter.updateById(
+                                found._id,
+                                {
+                                    $push: {
+                                        invites: {
+                                            invited: true,
+                                            email: ctx.params.invited_by_email
+                                        }
+                                    }
+                                }
+                            );
+
+                            const json = await this.transformDocuments(ctx, ctx.params, doc);
+                            await this.entityChanged("updated", json, ctx);
+
+                            return { success: true, broker: json, status: "Success" };
+                        }
+
+                        return { success: false, status: "Failed" };
+                    }
+                }
 
 
 			},
@@ -547,7 +575,7 @@ export default class UsersService extends Service{
                     const token = crypto.randomBytes(50 / 2).toString("hex");
 
                     await this.adapter.insertMany([
-                        { firstname: "app", lastname: "admin", position: "Broker", email: email, password: password, type: type, token: token, invited_by: [email] }
+                        { firstname: "app", lastname: "admin", position: "Broker", email: email, password: password, type: type, token: token, invited: true }
                     ]);
                 }
 			},
