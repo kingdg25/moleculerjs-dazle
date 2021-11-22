@@ -74,7 +74,7 @@ export default class UsersService extends Service{
                         optional: true,
                         items: {
                             type: "object", props: {
-                                granted: { type: "boolean", default: false },
+                                invited: { type: "boolean", default: false },
                                 email: { type: "string", empty: false },
                             }
                         },
@@ -160,7 +160,7 @@ export default class UsersService extends Service{
                                 {
                                     $push: {
                                         invites: {
-                                            granted: false,
+                                            invited: false,
                                             email: entity.email // salesperson email
                                         }
                                     }
