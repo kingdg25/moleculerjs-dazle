@@ -73,7 +73,8 @@ export default class UsersService extends Service{
                         type: "array",
                         optional: true,
                         items: {
-                            type: "object", props: {
+                            type: "object",
+                            props: {
                                 invited: { type: "boolean", default: false },
                                 email: { type: "string", empty: false },
                             }
