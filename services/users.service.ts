@@ -599,6 +599,70 @@ export default class UsersService extends Service{
 
                         return { success: false, status: status };
                     }
+                },
+
+                /**
+                 * Update user.
+                 *
+                 * @param {Object} user - User entity
+                 */
+                 update: {
+                    rest: {
+                        method: "PUT",
+                        path: "/update"
+                    },
+                    params: {
+                        user: { type: "object" },
+                    },
+                    /** @param {Context} ctx  */
+                    async handler(ctx) {
+                        const entity = ctx.params.user;
+        
+                        const found = await this.adapter.findOne({
+                            email: entity.email,
+                        });
+                        if (found) {
+                            // for salesperson only
+                            if ( entity.position == "Salesperson" ) {
+                                // check salesperson broker
+                                const brokerFound = await this.adapter.findOne({
+                                    license_number: entity.license_number
+                                });
+                                if (!brokerFound){
+                                    return {
+                                        success: false,
+                                        status: "It seems your Broker is not yet with Dazle. Invite your Broker to complete your registration.",
+                                    };
+                                }
+
+                                // send request invite to broker
+                                const doc = await this.adapter.updateById(
+                                    brokerFound._id,
+                                    {
+                                        $push: {
+                                            invites: {
+                                                invited: false,
+                                                email: entity.email // salesperson email
+                                            }
+                                        }
+                                    }
+                                );
+                            }
+            
+                            const doc = await this.adapter.updateById(
+                                found._id,
+                                {
+                                    $set: entity
+                                }
+                            );
+                            const json = await this.transformDocuments(ctx, ctx.params, doc);
+                            await this.entityChanged("updated", json, ctx);
+            
+                            return { success: true, user: json, status: "Update Success" };
+                        }
+
+                        return { success: false, status: "Update Fail" };
+                    }
                 }
 
 
