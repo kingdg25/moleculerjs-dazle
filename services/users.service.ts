@@ -44,6 +44,9 @@ export default class UsersService extends Service{
                     "_id",
                     "firstname",
                     "lastname",
+                    "mobile_number",
+                    "position",
+                    "license_number",
                     "email",
                     "token",
                     "is_new_user",
@@ -371,7 +374,7 @@ export default class UsersService extends Service{
                         }
                         else{
                             if (entity.type === "gmail") {
-                                console.log('google credentials', process.env.GOOGLE_ID, process.env.GOOGLE_SECRET, process.env.REDIRECT_URI);
+                                console.log('google credentials', process.env.GOOGLE_ID, process.env.GOOGLE_SECRET);
                                 console.log(entity.token);
         
                                 const ticket = await client.verifyIdToken({
@@ -552,6 +555,49 @@ export default class UsersService extends Service{
                         }
 
                         return { success: false, status: "Failed" };
+                    }
+                },
+
+                /**
+                 * Check if user is authenticated or invited
+                 *
+                 * @param {String} token - user token
+                 */
+                 isAuthenticated: {
+                    rest: {
+                        method: "POST",
+                        path: "/is-authenticated"
+                    },
+                    params: {
+                        token: { type: "string" },
+                    },
+                    /** @param {Context} ctx  */
+                    async handler(ctx) {
+                        let status = "Fail to authenticate";
+
+                        const found = await this.adapter.findOne({
+                            token: ctx.params.token
+                        });
+
+                        if (found) {
+                            // check if user is invited
+                            const foundInvited = await this.adapter.findOne({
+                                invites: {
+                                    $elemMatch: {
+                                        email: found.email,
+                                        invited: true
+                                    }
+                                }
+                            });
+
+                            if ( foundInvited ) {
+                                return { success: true, status: "User authenticated success" };
+                            }
+
+                            status = "Your account status is currently pending";
+                        }
+
+                        return { success: false, status: status };
                     }
                 }
 
