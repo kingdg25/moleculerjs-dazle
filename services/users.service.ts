@@ -608,14 +608,14 @@ export default class UsersService extends Service{
                 },
 
                 /**
-                 * Update user.
+                 * Setup Profile for social logins user.
                  *
                  * @param {Object} user - User entity
                  */
-                 update: {
+                 setupProfile: {
                     rest: {
                         method: "PUT",
-                        path: "/update"
+                        path: "/setup-profile"
                     },
                     params: {
                         user: { type: "object" },
