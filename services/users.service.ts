@@ -49,8 +49,7 @@ export default class UsersService extends Service{
                     "license_number",
                     "email",
                     "token",
-                    "is_new_user",
-                    "invited"
+                    "is_new_user"
                 ],
 				logging: true,
 
@@ -84,7 +83,6 @@ export default class UsersService extends Service{
                             }
                         },
                     },
-                    invited: { type: "boolean", default: false },
                     verified: { type: "boolean", default: false },
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
@@ -211,8 +209,6 @@ export default class UsersService extends Service{
                             email: auth.email,
                         });
 
-                        let status = "Please enter a valid username/password to sign in";
-
                         // check user
                         if (found) {
                             // check password
@@ -228,22 +224,17 @@ export default class UsersService extends Service{
                                 });
 
                                 if ( foundInvited ) {
-                                    
-                                    const doc = await this.adapter.updateById(
-                                        found._id, 
-                                        { $set: { invited: true } }
-                                    );
-                                    const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                    const json = await this.transformDocuments(ctx, ctx.params, found);
                                     await this.entityChanged("updated", json, ctx);
 
                                     return { success: true, user: json, status: "Login success" };
                                 }
 
-                                status = "Your account status is currently pending";
+                                return { success: false, user: auth, status: "Your account status is currently pending" };
                             }
                         }
 
-                        return { success: false, user: auth, status: status };
+                        return { success: false, user: auth, status: "Please enter a valid username/password to sign in" };
                     }
                 },
         
@@ -370,7 +361,24 @@ export default class UsersService extends Service{
                         });
         
                         if (found) {
-                            return { success: true, user: found, status: "Already registered" };
+                            // check if user is invited
+                            const foundInvited = await this.adapter.findOne({
+                                invites: {
+                                    $elemMatch: {
+                                        email: found.email,
+                                        invited: true
+                                    }
+                                }
+                            });
+
+                            if ( foundInvited ) {
+                                const json = await this.transformDocuments(ctx, ctx.params, found);
+                                await this.entityChanged("updated", json, ctx);
+
+                                return { success: true, user: json, status: "Social login Success" };
+                            }
+
+                            return { success: false, user: found, status: "Your account status is currently pending" };
                         }
                         else{
                             if (entity.type === "gmail") {
@@ -573,8 +581,6 @@ export default class UsersService extends Service{
                     },
                     /** @param {Context} ctx  */
                     async handler(ctx) {
-                        let status = "Fail to authenticate";
-
                         const found = await this.adapter.findOne({
                             token: ctx.params.token
                         });
@@ -594,10 +600,10 @@ export default class UsersService extends Service{
                                 return { success: true, status: "User authenticated success" };
                             }
 
-                            status = "Your account status is currently pending";
+                            return { success: false, status: "Your account status is currently pending" };
                         }
 
-                        return { success: false, status: status };
+                        return { success: false, status: "Fail to authenticate" };
                     }
                 },
 
@@ -685,7 +691,7 @@ export default class UsersService extends Service{
                     const token = crypto.randomBytes(50 / 2).toString("hex");
 
                     await this.adapter.insertMany([
-                        { firstname: "app", lastname: "admin", position: "Broker", email: email, password: password, type: type, token: token, invited: true }
+                        { firstname: "app", lastname: "admin", position: "Broker", email: email, password: password, type: type, token: token }
                     ]);
                 }
 			},
