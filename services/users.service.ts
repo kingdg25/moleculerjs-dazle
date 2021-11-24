@@ -691,7 +691,7 @@ export default class UsersService extends Service{
                     const token = crypto.randomBytes(50 / 2).toString("hex");
 
                     await this.adapter.insertMany([
-                        { firstname: "app", lastname: "admin", position: "Broker", email: email, password: password, type: type, token: token }
+                        { firstname: "app", lastname: "admin", position: "Broker", "broker_license_number": "1234567890", email: email, password: password, type: type, token: token, "invites":[{"invited":true,"email":email}] }
                     ]);
                 }
 			},
