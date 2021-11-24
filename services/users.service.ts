@@ -59,11 +59,11 @@ export default class UsersService extends Service{
                     lastname: { type: "string" },
                     mobile_number: { type: "string" },
                     position: { type: "enum", values: ["Broker", "Salesperson"] },
-                    broker_license_number: { type: "string", optional: true },
+                    broker_license_number: { type: "string" },
                     email: { type: "email" },
                     password: {
                         type: "string",
-                        min: 6,
+                        min: 8,
                     },
                     code: { type: "string", optional: true },
                     token: {
@@ -399,6 +399,7 @@ export default class UsersService extends Service{
                                     entity.firstname = given_name;
                                     entity.lastname = family_name;
                                     entity.email = email;
+                                    entity.is_new_user = true;
         
                                     const doc = await this.adapter.insert(entity);
                                     const json = await this.transformDocuments(ctx, ctx.params, doc);
@@ -424,6 +425,7 @@ export default class UsersService extends Service{
                                     entity.firstname = data['first_name'];
                                     entity.lastname = data['last_name'];
                                     entity.email = ctx.params.user.email;
+                                    entity.is_new_user = true;
         
                                     const doc = await this.adapter.insert(entity);
                                     const json = await this.transformDocuments(ctx, ctx.params, doc);
@@ -692,7 +694,7 @@ export default class UsersService extends Service{
                     const token = crypto.randomBytes(50 / 2).toString("hex");
 
                     await this.adapter.insertMany([
-                        { firstname: "app", lastname: "admin", position: "Broker", "broker_license_number": "1234567890", email: email, password: password, type: type, token: token, "invites":[{"invited":true,"email":email}] }
+                        { firstname: "app", lastname: "admin", position: "Broker", "broker_license_number": "1234567890", email: email, password: password, type: type, token: token, "is_new_user": false, "invites":[{"invited":true,"email":email}] }
                     ]);
                 }
 			},
