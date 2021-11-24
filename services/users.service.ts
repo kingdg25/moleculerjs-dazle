@@ -507,7 +507,8 @@ export default class UsersService extends Service{
                         });
 
                         if (found) {
-                            return { success: true, broker: found, status: "Success" };
+                            const json = await this.transformDocuments(ctx, ctx.params, found);
+                            return { success: true, broker: json, status: "Success" };
                         }
 
                         return { success: false, status: "It seems your Broker is not yet with Dazle. Invite your Broker to complete your registration." };
