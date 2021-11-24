@@ -46,7 +46,7 @@ export default class UsersService extends Service{
                     "lastname",
                     "mobile_number",
                     "position",
-                    "license_number",
+                    "broker_license_number",
                     "email",
                     "token",
                     "is_new_user"
@@ -59,7 +59,7 @@ export default class UsersService extends Service{
                     lastname: { type: "string" },
                     mobile_number: { type: "string" },
                     position: { type: "enum", values: ["Broker", "Salesperson"] },
-                    license_number: { type: "string", optional: true },
+                    broker_license_number: { type: "string", optional: true },
                     email: { type: "email" },
                     password: {
                         type: "string",
@@ -148,7 +148,7 @@ export default class UsersService extends Service{
                         if ( entity.position == "Salesperson" ) {
                             // check salesperson broker
                             const brokerFound = await this.adapter.findOne({
-                                license_number: entity.license_number
+                                broker_license_number: entity.broker_license_number
                             });
                             if (!brokerFound){
                                 return {
@@ -487,7 +487,7 @@ export default class UsersService extends Service{
                 /**
                  * check broker license number
                  *
-                 * @param {String} license_number - Broker license number
+                 * @param {String} broker_license_number - Broker license number
                  */
                  checkLicenseNumber: {
                     rest: {
@@ -495,15 +495,15 @@ export default class UsersService extends Service{
                         path: "/check-license-number"
                     },
                     params: {
-                        license_number: { type: "string" },
+                        broker_license_number: { type: "string" },
                     },
                     /** @param {Context} ctx  */
                     async handler(ctx) {
-                        const license_number = ctx.params.license_number;
+                        const broker_license_number = ctx.params.broker_license_number;
         
                         const found = await this.adapter.findOne({
                             position: 'Broker',
-                            license_number: license_number,
+                            broker_license_number: broker_license_number,
                         });
 
                         if (found) {
@@ -632,7 +632,7 @@ export default class UsersService extends Service{
                             if ( entity.position == "Salesperson" ) {
                                 // check salesperson broker
                                 const brokerFound = await this.adapter.findOne({
-                                    license_number: entity.license_number
+                                    broker_license_number: entity.broker_license_number
                                 });
                                 if (!brokerFound){
                                     return {
