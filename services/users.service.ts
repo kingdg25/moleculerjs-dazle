@@ -140,6 +140,7 @@ export default class UsersService extends Service{
                         if (found) {
                             return {
                                 success: false,
+                                error_type: "email_exist",
                                 status: "Email already exist",
                             };
                         }
@@ -153,6 +154,7 @@ export default class UsersService extends Service{
                             if (!brokerFound){
                                 return {
                                     success: false,
+                                    error_type: "no_broker",
                                     status: "It seems your Broker is not yet with Dazle. Invite your Broker to complete your registration.",
                                 };
                             }
@@ -230,11 +232,11 @@ export default class UsersService extends Service{
                                     return { success: true, user: json, status: "Login success" };
                                 }
 
-                                return { success: false, user: auth, status: "Your account status is currently pending" };
+                                return { success: false, error_type: "pending", user: auth, status: "Your account status is currently pending" };
                             }
                         }
 
-                        return { success: false, user: auth, status: "Please enter a valid username/password to sign in" };
+                        return { success: false, error_type: "not_found", user: auth, status: "Please enter a valid username/password to sign in" };
                     }
                 },
         
@@ -288,7 +290,7 @@ export default class UsersService extends Service{
                             }
                         }
 
-                        return { success: false, status: "Sorry we can't find an account with this email address" };
+                        return { success: false, error_type: "not_found", status: "Sorry we can't find an account with this email address" };
                     }
                 },
         
@@ -335,7 +337,7 @@ export default class UsersService extends Service{
                             }
                         }
                         
-                        return { success: false, status: "Sorry we can't find an account with this email address" };
+                        return { success: false, error_type: "not_found", status: "Sorry we can't find an account with this email address" };
                     }
                 },
         
@@ -378,7 +380,7 @@ export default class UsersService extends Service{
                                 return { success: true, user: json, status: "Social login Success" };
                             }
 
-                            return { success: false, user: found, status: "Your account status is currently pending" };
+                            return { success: false, error_type: "pending", user: found, status: "Your account status is currently pending" };
                         }
                         else{
                             if (entity.type === "gmail") {
@@ -409,7 +411,7 @@ export default class UsersService extends Service{
                                 
                                 }
                                 else {
-                                    return { success: false, status: "Google login fail" };
+                                    return { success: false, error_type: "google_login_fail", status: "Google login fail" };
                                 }
                             }
                             else if (entity.type === "facebook") {
@@ -435,11 +437,11 @@ export default class UsersService extends Service{
                                 
                                 }
                                 else {
-                                    return { success: false, status: "Facebook login failed" };
+                                    return { success: false, error_type: "facebook_login_fail", status: "Facebook login failed" };
                                 }
                             }
                             else {
-                                return { success: false, status: "No login type found" };
+                                return { success: false, error_type: "no_login_type_found", status: "No login type found" };
                             }
                         }
                     }
@@ -482,7 +484,7 @@ export default class UsersService extends Service{
                             return { success: true, user: json, status: "Success" };
                         }
 
-                        return { success: false, user: auth, status: "Failed" };
+                        return { success: false, error_type: "not_found", user: auth, status: "Failed" };
                     }
                 },
 
@@ -513,7 +515,7 @@ export default class UsersService extends Service{
                             return { success: true, broker: json, status: "Success" };
                         }
 
-                        return { success: false, status: "It seems your Broker is not yet with Dazle. Invite your Broker to complete your registration." };
+                        return { success: false, error_type: "no_broker", status: "It seems your Broker is not yet with Dazle. Invite your Broker to complete your registration." };
                     }
                 },
 
@@ -565,7 +567,7 @@ export default class UsersService extends Service{
                             return { success: true, broker: json, status: "Success" };
                         }
 
-                        return { success: false, status: "Failed" };
+                        return { success: false, error_type: "not_found", status: "Failed" };
                     }
                 },
 
@@ -603,10 +605,10 @@ export default class UsersService extends Service{
                                 return { success: true, status: "User authenticated success" };
                             }
 
-                            return { success: false, status: "Your account status is currently pending" };
+                            return { success: false, error_type: "pending", status: "Your account status is currently pending" };
                         }
 
-                        return { success: false, status: "Fail to authenticate" };
+                        return { success: false, error_type: "not_found", status: "Fail to authenticate" };
                     }
                 },
 
@@ -640,6 +642,7 @@ export default class UsersService extends Service{
                                 if (!brokerFound){
                                     return {
                                         success: false,
+                                        error_type: "no_broker",
                                         status: "It seems your Broker is not yet with Dazle. Invite your Broker to complete your registration.",
                                     };
                                 }
@@ -667,10 +670,10 @@ export default class UsersService extends Service{
                             const json = await this.transformDocuments(ctx, ctx.params, doc);
                             await this.entityChanged("updated", json, ctx);
             
-                            return { success: true, user: json, status: "Update Success" };
+                            return { success: true, user: json, status: "Setup Profile Success" };
                         }
 
-                        return { success: false, status: "Update Fail" };
+                        return { success: false, error_type: "not_found", status: "Setup Profile Fail" };
                     }
                 }
 
