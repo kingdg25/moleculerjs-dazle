@@ -171,7 +171,29 @@ export default class UsersService extends Service{
                                     }
                                 }
                             );
-                            console.log('send invitation to broker', doc);
+                            // console.log('send invitation to broker', doc);
+                        }
+                        else if ( entity.position == "Broker" ) {
+                            // check admin
+                            const adminFound = await this.adapter.findOne({
+                                broker_license_number: "1234567890"
+                            });
+
+                            if ( adminFound ) {
+                                // send request invite to admin
+                                const doc = await this.adapter.updateById(
+                                    adminFound._id,
+                                    {
+                                        $push: {
+                                            invites: {
+                                                invited: false,
+                                                email: entity.email // broker email
+                                            }
+                                        }
+                                    }
+                                );
+                                // console.log('send invitation to admin', doc);
+                            }
                         }
         
                         entity.password = bcrypt.hashSync(
@@ -659,6 +681,27 @@ export default class UsersService extends Service{
                                         }
                                     }
                                 );
+                            }
+                            else if ( entity.position == "Broker" ) {
+                                // check admin
+                                const adminFound = await this.adapter.findOne({
+                                    broker_license_number: "1234567890"
+                                });
+    
+                                if ( adminFound ) {
+                                    // send request invite to admin
+                                    const doc = await this.adapter.updateById(
+                                        adminFound._id,
+                                        {
+                                            $push: {
+                                                invites: {
+                                                    invited: false,
+                                                    email: entity.email // broker email
+                                                }
+                                            }
+                                        }
+                                    );
+                                }
                             }
             
                             const doc = await this.adapter.updateById(
