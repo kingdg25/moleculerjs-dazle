@@ -439,7 +439,7 @@ export default class UsersService extends Service{
                             else if (entity.type === "facebook") {
                                 console.log('facebook token',entity.token);
         
-                                const resp = await this._client.get(`https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${entity.token}`);
+                                const resp = await this._get(`https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${entity.token}`);
                                 const data = JSON.parse(resp.body);
         
                                 console.log('faceboook json data', data);
