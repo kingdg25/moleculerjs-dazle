@@ -100,13 +100,13 @@ export default class ProductsService extends Service{
 				 * It is called in the DB.mixin after the database
 				 * connection establishing & the collection is empty.
 				 */
-				async seedDB() {
-					await this.adapter.insertMany([
-						{ name: "Samsung Galaxy S10 Plus", quantity: 10, price: 704 },
-						{ name: "iPhone 11 Pro", quantity: 25, price: 999 },
-						{ name: "Huawei P30 Pro", quantity: 15, price: 679 },
-					]);
-				},
+				// async seedDB() {
+				// 	await this.adapter.insertMany([
+				// 		{ name: "Samsung Galaxy S10 Plus", quantity: 10, price: 704 },
+				// 		{ name: "iPhone 11 Pro", quantity: 25, price: 999 },
+				// 		{ name: "Huawei P30 Pro", quantity: 15, price: 679 },
+				// 	]);
+				// },
 			},
 			/**
 			 * Loading sample data to the collection.
