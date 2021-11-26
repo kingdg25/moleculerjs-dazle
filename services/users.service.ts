@@ -65,7 +65,7 @@ export default class UsersService extends Service{
                         type: "string",
                         min: 8,
                     },
-                    type: { type: "string", optional: true },
+                    login_type: { type: "string", optional: true },
                     code: { type: "string", optional: true },
                     token: {
                         type: "string",
@@ -201,7 +201,7 @@ export default class UsersService extends Service{
                             entity.password,
                             10
                         );
-                        entity.type = 'email&pass';
+                        entity.login_type = 'email&pass';
                         entity.token = crypto.randomBytes(50 / 2).toString("hex");
 
         
@@ -287,7 +287,7 @@ export default class UsersService extends Service{
 
                             if (found) {
 
-                                if (found.type == 'email&pass'){
+                                if (found.login_type == 'email&pass'){
                                     const genCode = Math.random().toString(36).substr(2, 4);
             
                                     this.send({
@@ -408,10 +408,10 @@ export default class UsersService extends Service{
                                 return { success: false, error_type: "pending", user: found, status: "Your account status is currently pending" };
                             }
                         
-                            return { success: false, error_type: "no_setup_profile", user: found, status: `${found.type} login fail` };
+                            return { success: false, error_type: "no_setup_profile", user: found, status: `${found.login_type} login fail` };
                         }
                         else{
-                            if (entity.type === "gmail") {
+                            if (entity.login_type === "gmail") {
                                 console.log('google credentials', process.env.GOOGLE_ID, process.env.GOOGLE_SECRET);
                                 console.log(entity.token);
         
@@ -440,7 +440,7 @@ export default class UsersService extends Service{
                                     return { success: false, error_type: "google_login_fail", status: "Google login fail" };
                                 }
                             }
-                            else if (entity.type === "facebook") {
+                            else if (entity.login_type === "facebook") {
                                 console.log('facebook token',entity.token);
 
                                 const resp = await this._client.get(`https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${entity.token}`);
@@ -738,11 +738,11 @@ export default class UsersService extends Service{
                         pass,
                         10
                     );
-                    const type = 'email&pass';
+                    const login_type = 'email&pass';
                     const token = crypto.randomBytes(50 / 2).toString("hex");
 
                     await this.adapter.insertMany([
-                        { firstname: "app", lastname: "admin", position: "Broker", "broker_license_number": "1234567890", email: email, password: password, type: type, token: token, "is_new_user": false, "invites":[{"invited":true,"email":email}] }
+                        { firstname: "app", lastname: "admin", position: "Broker", "broker_license_number": "1234567890", email: email, password: password, login_type: login_type, token: token, "is_new_user": false, "invites":[{"invited":true,"email":email}] }
                     ]);
                 }
 			},
