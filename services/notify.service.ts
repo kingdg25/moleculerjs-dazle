@@ -1,6 +1,9 @@
 "use strict";
+
 import {Service, ServiceBroker, Context} from "moleculer";
 import dotenv from "dotenv";
+import HTTPClientService from "moleculer-http-client";
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MailService = require("moleculer-mail");
 dotenv.config();
@@ -12,7 +15,7 @@ export default class NotifyService extends Service{
 		super(broker);
 		this.parseServiceSchema({
 			name: "notify",
-			mixins: [MailService],
+			mixins: [MailService, HTTPClientService],
 			settings: {
                 JWT_SECRET: process.env.JWT_SECRET || "jwt-secret",
 
@@ -52,7 +55,7 @@ export default class NotifyService extends Service{
 						const email = ctx.params.email;
 						const mobileNumber = ctx.params.mobile_number;
 
-						// send email to broker
+						// send email to user
 						if ( email ) {
 							this.send({
 								to: email,
@@ -63,8 +66,20 @@ export default class NotifyService extends Service{
 							is_email = true;
 						}
 
-						// send sms to broker
+						// send sms to user
 						if ( mobileNumber ) {
+							var response = await this._post("https://portal.bulkgate.com/api/1.0/simple/promotional",{
+								json: {
+									application_id: process.env.SMS_APP_ID,
+									application_token: process.env.SMS_APP_TOKEN,
+									number: mobileNumber,
+									text: "Dazle App Invitation\n\nClick https://play.google.com/store/apps/details?id=com.brooky.rcdlandinc to register in the app.",
+									sender_id: "6272",
+									sender_id_value: "BROOKY"
+								}
+							});
+
+							is_mobile_number = response != null ? true : false;
 						}
 
 
