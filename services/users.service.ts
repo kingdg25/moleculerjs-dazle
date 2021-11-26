@@ -65,6 +65,7 @@ export default class UsersService extends Service{
                         type: "string",
                         min: 8,
                     },
+                    type: { type: "string", optional: true },
                     code: { type: "string", optional: true },
                     token: {
                         type: "string",
@@ -385,24 +386,29 @@ export default class UsersService extends Service{
                         });
         
                         if (found) {
-                            // check if user is invited
-                            const foundInvited = await this.adapter.findOne({
-                                invites: {
-                                    $elemMatch: {
-                                        email: found.email,
-                                        invited: true
+                            // check user required fields on social logins
+                            if( found.mobile_number && found.position && found.broker_license_number ) {
+                                // check if user is invited
+                                const foundInvited = await this.adapter.findOne({
+                                    invites: {
+                                        $elemMatch: {
+                                            email: found.email,
+                                            invited: true
+                                        }
                                     }
+                                });
+                        
+                                if ( foundInvited ) {
+                                    const json = await this.transformDocuments(ctx, ctx.params, found);
+                                    await this.entityChanged("updated", json, ctx);
+                        
+                                    return { success: true, user: json, status: "Social login Success" };
                                 }
-                            });
-
-                            if ( foundInvited ) {
-                                const json = await this.transformDocuments(ctx, ctx.params, found);
-                                await this.entityChanged("updated", json, ctx);
-
-                                return { success: true, user: json, status: "Social login Success" };
+                        
+                                return { success: false, error_type: "pending", user: found, status: "Your account status is currently pending" };
                             }
-
-                            return { success: false, error_type: "pending", user: found, status: "Your account status is currently pending" };
+                        
+                            return { success: false, error_type: "no_setup_profile", user: found, status: `${found.type} login fail` };
                         }
                         else{
                             if (entity.type === "gmail") {
