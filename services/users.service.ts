@@ -419,10 +419,8 @@ export default class UsersService extends Service{
                                 if (ticket) {
                                     const { given_name, family_name, email } = ticket.getPayload();
         
-                                    entity.token = ctx.params.user.token;
                                     entity.firstname = given_name;
                                     entity.lastname = family_name;
-                                    entity.email = email;
                                     entity.is_new_user = true;
         
                                     const doc = await this.adapter.insert(entity);
@@ -438,17 +436,15 @@ export default class UsersService extends Service{
                             }
                             else if (entity.type === "facebook") {
                                 console.log('facebook token',entity.token);
-        
-                                const resp = await this._get(`https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${entity.token}`);
+
+                                const resp = await this._client.get(`https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${entity.token}`);
                                 const data = JSON.parse(resp.body);
         
                                 console.log('faceboook json data', data);
         
                                 if (data != null) {
-                                    entity.token = ctx.params.user.token;
                                     entity.firstname = data['first_name'];
                                     entity.lastname = data['last_name'];
-                                    entity.email = ctx.params.user.email;
                                     entity.is_new_user = true;
         
                                     const doc = await this.adapter.insert(entity);
