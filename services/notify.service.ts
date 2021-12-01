@@ -84,10 +84,11 @@ export default class NotifyService extends Service{
 
 
 						return {
-							success: ( is_email || is_mobile_number ) ? true : false,
 							is_email: is_email,
 							is_mobile_number: is_mobile_number,
-							status: "Success"
+							success: ( is_email || is_mobile_number ) ? true : false,
+							error_type: ( is_email || is_mobile_number ) ? "" : "not_sent",
+							status: ( is_email || is_mobile_number ) ? "Success" : "Failed",
 						};
 
 					},
