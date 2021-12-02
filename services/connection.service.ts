@@ -188,7 +188,75 @@ export default class ConnectionService extends Service{
                         // };
 
 					},
+				},
+
+                /**
+				 * add connection for agent.
+				 *
+				 * @param {String} user_id - user id
+                 * @param {String} invited_id - invited id
+				 */
+                 addConnection: {
+					rest: {
+						method: "POST",
+						path: "/add-connection",
+					},
+					params: {
+                        user_id: { type: "string" },
+                        invited_id: { type: "string" },
+                    },
+					async handler(ctx) {
+                        const userId = ctx.params.user_id;
+                        const invitedId = ctx.params.invited_id;
+
+                        const userFound = await this.adapter.findOne({
+                            _id: userId
+                        });
+
+                        const invitedFound = await this.adapter.findOne({
+                            _id: invitedId
+                        });
+
+                        if ( userFound && invitedFound ) {
+                            // check user invites if the invited is exist or not
+                            const isUserInvitesExist = (userFound.invites) ? userFound.invites.some( (invite: any) => {
+                                return invite.email === invitedFound.email;
+                            }) : false;
+                            // console.log('isUserInvitesExist', isUserInvitesExist);
+
+                            if( isUserInvitesExist ) {
+                                const finalUserInvites = userFound.invites.map( (invite: any) => {
+                                    if ( invite.email === invitedFound.email ) {
+                                        invite.invited = true;
+                                    }
+                                    return invite;
+                                });
+                                // console.log('finalUserInvites', finalUserInvites);
+
+                                // add invited user by replace the whole array with modified one
+                                const doc = await this.adapter.updateById(
+                                    userFound._id,
+                                    {
+                                        $set: {
+                                            invites: finalUserInvites
+                                        }
+                                    }
+                                );
+
+                                const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                await this.entityChanged("updated", json, ctx);
+
+                                return { success: true, broker: json, status: "Success" };
+                            }
+
+                            return { success: false, error_type: "invite_not_found", status: "Fail" };
+                        }
+
+                        return { success: false, error_type: "not_found", status: "Fail" };
+
+					},
 				}
+
 			},
 			methods: {
 				/**
