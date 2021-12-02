@@ -544,58 +544,6 @@ export default class UsersService extends Service{
                 },
 
                 /**
-                 * invite user to dazle
-                 *
-                 * @param {String} id - id
-                 * @param {String} invited_by_email - email
-                 */
-                invite: {
-                    rest: {
-                        method: "POST",
-                        path: "/invite"
-                    },
-                    params: {
-                        id: { type: "string" },
-                        invited_by_email: { type: "string" },
-                    },
-                    /** @param {Context} ctx  */
-                    async handler(ctx) {
-                        // check the one who's inviting the user by id
-                        const found = await this.adapter.findOne({
-                            _id: ctx.params.id
-                        });
-
-                        // check also the email of user who is invited
-                        const foundInvitedUser = await this.adapter.findOne({
-                            email: ctx.params.invited_by_email
-                        });
-
-
-                        if ( found && foundInvitedUser ){
-                            // add invited user
-                            const doc = await this.adapter.updateById(
-                                found._id,
-                                {
-                                    $push: {
-                                        invites: {
-                                            invited: true,
-                                            email: ctx.params.invited_by_email
-                                        }
-                                    }
-                                }
-                            );
-
-                            const json = await this.transformDocuments(ctx, ctx.params, doc);
-                            await this.entityChanged("updated", json, ctx);
-
-                            return { success: true, broker: json, status: "Success" };
-                        }
-
-                        return { success: false, error_type: "not_found", status: "Failed" };
-                    }
-                },
-
-                /**
                  * Check if user is authenticated or invited
                  *
                  * @param {String} token - user token
