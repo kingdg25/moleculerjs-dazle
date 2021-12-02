@@ -118,7 +118,7 @@ export default class ConnectionService extends Service{
                         if (found) {
                             // get list of agent who's field in invited == true
                             let myConnection = found.invites.filter(function(invite: any) {
-                                return invite.invited;
+                                return invite.invited && ( invite.email != found.email );
                             });
                             console.log(myConnection);
 
