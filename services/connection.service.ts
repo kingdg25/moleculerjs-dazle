@@ -318,6 +318,70 @@ export default class ConnectionService extends Service{
                         return { success: false, error_type: "not_found", status: "Fail" };
 
 					},
+				},
+
+                /**
+				 * search for user/agent.
+				 *
+				 * @param {String} user_id - user id
+                 * @param {String} pattern - pattern string
+                 * @param {Boolean} invited - invited boolean
+				 */
+                 searchUser: {
+					rest: {
+						method: "POST",
+						path: "/search-user",
+					},
+					params: {
+                        user_id: { type: "string" },
+                        pattern: { type: "string" },
+                        invited: { type: "boolean" },
+                    },
+					async handler(ctx) {
+                        const userId = ctx.params.user_id;
+                        const pattern = ctx.params.pattern.toLowerCase();
+                        const invited = ctx.params.invited;
+
+                        const userFound = await this.adapter.findOne({
+                            _id: userId
+                        });
+
+                        if ( userFound ) {
+                            // check invites array if not empty
+                            if ( userFound.invites ) {
+                                let finalUserInvites = [];
+
+                                // get list of agent
+                                let invites = userFound.invites.filter(function(invite: any) {
+                                    return invite.invited === invited &&  ( invite.email != userFound.email );
+                                });
+    
+                                // get agent other info
+                                for (var val of invites) {
+                                    const email = val.email;
+    
+                                    const agentFound = await this.adapter.findOne({
+                                        email: email
+                                    });
+    
+                                    if ( agentFound ) {
+                                        finalUserInvites.push(agentFound.firstname+ ' ' +agentFound.lastname);
+                                    }
+                                }
+
+                                let filteredFinalUserInvites = finalUserInvites.filter(function(invite: any) {
+                                    return invite.toLowerCase().includes(pattern);
+                                });
+
+                                console.log(filteredFinalUserInvites);
+                                return { success: true, data: filteredFinalUserInvites, status: "Success" };
+
+                            }
+                        }
+
+                        return { success: false, error_type: "not_found", status: "Fail" };
+
+					},
 				}
 
 			},
