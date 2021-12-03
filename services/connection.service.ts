@@ -45,6 +45,7 @@ export default class ConnectionService extends Service{
 				 * read invites pending of broker/agent.
 				 *
 				 * @param {String} email - email
+                 * @param {String} filter_by_name - filter by name
 				 */
                  readInvite: {
 					rest: {
@@ -53,9 +54,10 @@ export default class ConnectionService extends Service{
 					},
 					params: {
                         email: { type: "string" },
+                        filter_by_name: { type: "string", optional: true },
                     },
 					async handler(ctx) {
-                        const finalInvites = [];
+                        let finalInvites = [];
 
                         const found = await this.adapter.findOne({
                             email: ctx.params.email,
@@ -81,10 +83,19 @@ export default class ConnectionService extends Service{
                                         _id: agentFound._id,
                                         firstname: agentFound.firstname,
                                         lastname: agentFound.lastname,
+                                        displayname: agentFound.firstname+ ' ' +agentFound.lastname,
                                         total_connection: 'x',
                                         photo_url: agentFound.photo_url
                                     });
                                 }
+                            }
+
+                            // check filter if not empty
+                            const filter_by_name = ctx.params.filter_by_name;
+                            if ( filter_by_name ) {
+                                finalInvites = finalInvites.filter(function(invite: any) {
+                                    return invite.displayname.toLowerCase().includes(filter_by_name.toLowerCase());
+                                });
                             }
 
                             return { success: true, invites: finalInvites, status: "Success" };
@@ -99,6 +110,7 @@ export default class ConnectionService extends Service{
 				 * read my connection that I already invited/approved.
 				 *
 				 * @param {String} email - email
+                 * @param {String} filter_by_name - filter by name
 				 */
                  readMyConnection: {
 					rest: {
@@ -107,9 +119,10 @@ export default class ConnectionService extends Service{
 					},
 					params: {
                         email: { type: "string" },
+                        filter_by_name: { type: "string", optional: true },
                     },
 					async handler(ctx) {
-                        const finalMyConnection = [];
+                        let finalMyConnection = [];
 
                         const found = await this.adapter.findOne({
                             email: ctx.params.email,
@@ -135,11 +148,20 @@ export default class ConnectionService extends Service{
                                         _id: agentFound._id,
                                         firstname: agentFound.firstname,
                                         lastname: agentFound.lastname,
+                                        displayname: agentFound.firstname+ ' ' +agentFound.lastname,
                                         photo_url: agentFound.photo_url,
                                         position: agentFound.position,
                                         date_connected: agentFound.date_connected
                                     });
                                 }
+                            }
+
+                            // check filter if not empty
+                            const filter_by_name = ctx.params.filter_by_name;
+                            if ( filter_by_name ) {
+                                finalMyConnection = finalMyConnection.filter(function(invite: any) {
+                                    return invite.displayname.toLowerCase().includes(filter_by_name.toLowerCase());
+                                });
                             }
 
                             return { success: true, my_connection: finalMyConnection, status: "Success" };
