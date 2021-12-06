@@ -234,11 +234,11 @@ export default class ConnectionService extends Service{
                         const userId = ctx.params.user_id;
                         const invitedId = ctx.params.invited_id;
 
-                        const userFound = await this.adapter.findById({
+                        const userFound = await this.adapter.findOne({
                             _id: new ObjectID(userId)
                         });
 
-                        const invitedFound = await this.adapter.findById({
+                        const invitedFound = await this.adapter.findOne({
                             _id: new ObjectID(invitedId)
                         });
 
@@ -299,11 +299,11 @@ export default class ConnectionService extends Service{
                         const userId = ctx.params.user_id;
                         const invitedId = ctx.params.invited_id;
 
-                        const userFound = await this.adapter.findById({
+                        const userFound = await this.adapter.findOne({
                             _id: new ObjectID(userId)
                         });
 
-                        const invitedFound = await this.adapter.findById({
+                        const invitedFound = await this.adapter.findOne({
                             _id: new ObjectID(invitedId)
                         });
 
