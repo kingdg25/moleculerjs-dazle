@@ -3,6 +3,9 @@ import {Context, Service, ServiceBroker, ServiceSchema} from "moleculer";
 
 import DbConnection from "../mixins/db.mixin";
 
+let ObjectID = require('mongodb').ObjectID;
+
+
 export default class ConnectionService extends Service{
 
 	private DbMixin = new DbConnection("users").start();
@@ -232,11 +235,11 @@ export default class ConnectionService extends Service{
                         const invitedId = ctx.params.invited_id;
 
                         const userFound = await this.adapter.findById({
-                            _id: userId
+                            _id: new ObjectID(userId)
                         });
 
                         const invitedFound = await this.adapter.findById({
-                            _id: invitedId
+                            _id: new ObjectID(invitedId)
                         });
 
                         if ( userFound && invitedFound ) {
@@ -297,11 +300,11 @@ export default class ConnectionService extends Service{
                         const invitedId = ctx.params.invited_id;
 
                         const userFound = await this.adapter.findById({
-                            _id: userId
+                            _id: new ObjectID(userId)
                         });
 
                         const invitedFound = await this.adapter.findById({
-                            _id: invitedId
+                            _id: new ObjectID(invitedId)
                         });
 
                         if ( userFound && invitedFound ) {
