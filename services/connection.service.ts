@@ -368,7 +368,7 @@ export default class ConnectionService extends Service{
                         const invited = ctx.params.invited;
 
                         const userFound = await this.adapter.findOne({
-                            _id: userId
+                            _id: new ObjectID(userId)
                         });
 
                         if ( userFound ) {
