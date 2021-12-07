@@ -65,8 +65,9 @@ export default class ConnectionService extends Service{
                         const found = await this.adapter.findOne({
                             email: ctx.params.email,
                         });
+                        // console.log('found', found);
 
-                        if (found) {
+                        if (found && found.invites) {
                             // get list of agent who's field in invited == false
                             let invites = found.invites.filter(function(invite: any) {
                                 return !invite.invited;
@@ -131,7 +132,7 @@ export default class ConnectionService extends Service{
                             email: ctx.params.email,
                         });
 
-                        if (found) {
+                        if (found && found.invites) {
                             // get list of agent who's field in invited == true
                             let myConnection = found.invites.filter(function(invite: any) {
                                 return invite.invited && ( invite.email != found.email );
