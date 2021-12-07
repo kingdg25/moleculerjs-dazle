@@ -221,7 +221,8 @@ export default class UsersService extends Service{
                                 salesperson.forEach( (data: any) => {
                                     finalSalesperson.push({
                                         invited: false,
-                                        email: data.email
+                                        email: data.email,
+                                        date_modified: new Date()
                                     });
                                 });
                                 // console.log(salesperson, finalSalesperson);
