@@ -2,13 +2,25 @@
 import {Context, Service, ServiceBroker, ServiceSchema} from "moleculer";
 
 import DbConnection from "../mixins/db.mixin";
+import { formatDistanceToNow } from 'date-fns';
 
-let ObjectID = require('mongodb').ObjectID;
+
+const ObjectID = require('mongodb').ObjectID;
 
 
 export default class ConnectionService extends Service{
 
 	private DbMixin = new DbConnection("users").start();
+
+    public async getTotalConnection(agent: any) {
+        const allData = await this.adapter.find();
+
+        let agentData = allData.filter(function(data: any) {
+            return data.broker_license_number === agent.broker_license_number;
+        });
+
+        return ( agent.position === "Broker" ) ? (agentData.length-1).toString() : "1";
+    }
 
 	// @ts-ignore
 	public  constructor(public broker: ServiceBroker, schema: ServiceSchema<{}> = {}) {
@@ -65,7 +77,7 @@ export default class ConnectionService extends Service{
                         const found = await this.adapter.findOne({
                             email: ctx.params.email,
                         });
-                        // console.log('found', found);
+                        console.log('found', found);
 
                         if (found && found.invites) {
                             // get list of agent who's field in invited == false
@@ -82,13 +94,15 @@ export default class ConnectionService extends Service{
                                     email: email
                                 });
 
+                                const totalConnection = await this.getTotalConnection(agentFound);
+
                                 if ( agentFound ) {
                                     finalInvites.push({
                                         _id: agentFound._id,
                                         firstname: agentFound.firstname,
                                         lastname: agentFound.lastname,
                                         displayname: agentFound.firstname+ ' ' +agentFound.lastname,
-                                        total_connection: 'x',
+                                        total_connection: totalConnection,
                                         photo_url: agentFound.photo_url
                                     });
                                 }
@@ -155,7 +169,7 @@ export default class ConnectionService extends Service{
                                         displayname: agentFound.firstname+ ' ' +agentFound.lastname,
                                         photo_url: agentFound.photo_url,
                                         position: agentFound.position,
-                                        date_connected: agentFound.date_connected
+                                        date_modified: formatDistanceToNow(new Date(val.date_modified))
                                     });
                                 }
                             }
@@ -172,46 +186,6 @@ export default class ConnectionService extends Service{
                         }
 
                         return { success: false, error_type: "not_found", status: "Fail" };
-						// return {
-                        //     success: true,
-                        //     my_connection: [
-                        //         {
-                        //             _id: '1',
-                        //             firstname: 'my',
-                        //             lastname: 'name',
-                        //             total_connection: '3',
-                        //             position: 'asd'
-                        //         },
-                        //         {
-                        //             _id: '2',
-                        //             firstname: 'first1',
-                        //             lastname: 'last1',
-                        //             total_connection: '32',
-                        //             position: 'xf'
-                        //         },
-                        //         {
-                        //             _id: '3',
-                        //             firstname: 'xer2',
-                        //             lastname: 'cis3',
-                        //             total_connection: '41',
-                        //             position: 'salesperson'
-                        //         },
-                        //         {
-                        //             _id: '4',
-                        //             firstname: 'sil444',
-                        //             lastname: 'lao',
-                        //             total_connection: '28',
-                        //             position: 'broker'
-                        //         },
-                        //         {
-                        //             _id: '5',
-                        //             firstname: 'qwe',
-                        //             lastname: 'asd',
-                        //             total_connection: '231',
-                        //             position: 'broookers'
-                        //         }
-                        //     ]
-                        // };
 
 					},
 				},
@@ -253,6 +227,7 @@ export default class ConnectionService extends Service{
                                 const finalUserInvites = userFound.invites.map( (invite: any) => {
                                     if ( invite.email === invitedFound.email ) {
                                         invite.invited = true; // add agent
+                                        invite.date_modified = new Date(); // date when broker give access to salesperson
                                     }
                                     return invite;
                                 });
