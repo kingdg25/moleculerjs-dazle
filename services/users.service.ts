@@ -81,6 +81,7 @@ export default class UsersService extends Service{
                             props: {
                                 invited: { type: "boolean", default: false },
                                 email: { type: "string", empty: false },
+                                date_modified: { type: "date", default: () => new Date() },
                             }
                         },
                     },
@@ -161,7 +162,8 @@ export default class UsersService extends Service{
                                         $push: {
                                             invites: {
                                                 invited: false,
-                                                email: entity.email // salesperson email
+                                                email: entity.email, // salesperson email
+                                                date_modified: new Date()
                                             }
                                         }
                                     }
@@ -198,7 +200,8 @@ export default class UsersService extends Service{
                                         $push: {
                                             invites: {
                                                 invited: false,
-                                                email: entity.email // broker email
+                                                email: entity.email, // broker email
+                                                date_modified: new Date()
                                             }
                                         }
                                     }
@@ -652,7 +655,8 @@ export default class UsersService extends Service{
                                             $push: {
                                                 invites: {
                                                     invited: false,
-                                                    email: entity.email // salesperson email
+                                                    email: entity.email, // salesperson email
+                                                    date_modified: new Date()
                                                 }
                                             }
                                         }
@@ -688,7 +692,8 @@ export default class UsersService extends Service{
                                             $push: {
                                                 invites: {
                                                     invited: false,
-                                                    email: entity.email // broker email
+                                                    email: entity.email, // broker email
+                                                    date_modified: new Date()
                                                 }
                                             }
                                         }
@@ -753,7 +758,7 @@ export default class UsersService extends Service{
                     const token = crypto.randomBytes(50 / 2).toString("hex");
 
                     await this.adapter.insertMany([
-                        { firstname: "app", lastname: "admin", position: "Broker", "broker_license_number": "1234567890", email: email, password: password, login_type: login_type, token: token, "is_new_user": false, "invites":[{"invited":true,"email":email}] }
+                        { firstname: "app", lastname: "admin", position: "Broker", "broker_license_number": "1234567890", email: email, password: password, login_type: login_type, token: token, "is_new_user": false, "invites":[{"invited":true,"email":email, "date_modified": new Date()}] }
                     ]);
                 }
 			},
