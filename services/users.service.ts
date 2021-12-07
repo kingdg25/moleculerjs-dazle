@@ -150,39 +150,49 @@ export default class UsersService extends Service{
                         if ( entity.position == "Salesperson" ) {
                             // check salesperson broker
                             const brokerFound = await this.adapter.findOne({
-                                broker_license_number: entity.broker_license_number
+                                broker_license_number: entity.broker_license_number,
+                                position: "Broker"
                             });
-                            if (!brokerFound){
+                            if (brokerFound){
+                                // send request invite to broker
+                                await this.adapter.updateById(
+                                    brokerFound._id,
+                                    {
+                                        $push: {
+                                            invites: {
+                                                invited: false,
+                                                email: entity.email // salesperson email
+                                            }
+                                        }
+                                    }
+                                );
+                            }
+                        
+                        }
+                        else if ( entity.position == "Broker" ) {
+                            // check broker license number
+                            const brokerLicenseNumberFound = await this.adapter.findOne({
+                                broker_license_number: entity.broker_license_number,
+                                position: "Broker"
+                            });
+                            if (brokerLicenseNumberFound) {
                                 return {
                                     success: false,
-                                    error_type: "no_broker",
-                                    status: "It seems your Broker is not yet with Dazle. Invite your Broker to complete your registration.",
+                                    error_type: "broker_exist",
+                                    status: "Broker already exist",
                                 };
                             }
 
-                            // send request invite to broker
-                            const doc = await this.adapter.updateById(
-                                brokerFound._id,
-                                {
-                                    $push: {
-                                        invites: {
-                                            invited: false,
-                                            email: entity.email // salesperson email
-                                        }
-                                    }
-                                }
-                            );
-                            // console.log('send invitation to broker', doc);
-                        }
-                        else if ( entity.position == "Broker" ) {
+
                             // check admin
                             const adminFound = await this.adapter.findOne({
-                                broker_license_number: "1234567890"
+                                broker_license_number: "1234567890",
+                                position: "Broker"
                             });
 
                             if ( adminFound ) {
                                 // send request invite to admin
-                                const doc = await this.adapter.updateById(
+                                await this.adapter.updateById(
                                     adminFound._id,
                                     {
                                         $push: {
@@ -193,10 +203,31 @@ export default class UsersService extends Service{
                                         }
                                     }
                                 );
-                                // console.log('send invitation to admin', doc);
                             }
+
+                            // check all data that have position of salesperson and the same broker license number
+                            // add salesperson that already registered before the broker
+                            const allData = await this.adapter.find();
+                            let finalSalesperson = <any>[];
+
+                            let salesperson = allData.filter(function(data: any) {
+                                return data.broker_license_number === entity.broker_license_number && data.position === "Salesperson";
+                            });
+
+                            if (salesperson) {
+                                salesperson.forEach( (data: any) => {
+                                    finalSalesperson.push({
+                                        invited: false,
+                                        email: data.email
+                                    });
+                                });
+                                // console.log(salesperson, finalSalesperson);
+
+                                entity.invites = finalSalesperson; // add salesperson to the broker
+                            }
+
                         }
-        
+
                         entity.password = bcrypt.hashSync(
                             entity.password,
                             10
@@ -204,12 +235,13 @@ export default class UsersService extends Service{
                         entity.login_type = 'email&pass';
                         entity.token = crypto.randomBytes(50 / 2).toString("hex");
 
-        
                         const doc = await this.adapter.insert(entity);
                         const json = await this.transformDocuments(ctx, ctx.params, doc);
                         await this.entityChanged("created", json, ctx);
+
         
-                        return { success: true, user: json, status: "Success" };
+                        return { success: true, user: json, status: "Registration Success" };
+                        
                     }
                 },
         
@@ -609,38 +641,48 @@ export default class UsersService extends Service{
                             if ( entity.position == "Salesperson" ) {
                                 // check salesperson broker
                                 const brokerFound = await this.adapter.findOne({
-                                    broker_license_number: entity.broker_license_number
+                                    broker_license_number: entity.broker_license_number,
+                                    position: "Broker"
                                 });
-                                if (!brokerFound){
+                                if (brokerFound){
+                                    // send request invite to broker
+                                    await this.adapter.updateById(
+                                        brokerFound._id,
+                                        {
+                                            $push: {
+                                                invites: {
+                                                    invited: false,
+                                                    email: entity.email // salesperson email
+                                                }
+                                            }
+                                        }
+                                    );
+                                }
+                            }
+                            else if ( entity.position == "Broker" ) {
+                                // check broker license number
+                                const brokerLicenseNumberFound = await this.adapter.findOne({
+                                    broker_license_number: entity.broker_license_number,
+                                    position: "Broker"
+                                });
+                                if (brokerLicenseNumberFound) {
                                     return {
                                         success: false,
-                                        error_type: "no_broker",
-                                        status: "It seems your Broker is not yet with Dazle. Invite your Broker to complete your registration.",
+                                        error_type: "broker_exist",
+                                        status: "Broker already exist",
                                     };
                                 }
 
-                                // send request invite to broker
-                                const doc = await this.adapter.updateById(
-                                    brokerFound._id,
-                                    {
-                                        $push: {
-                                            invites: {
-                                                invited: false,
-                                                email: entity.email // salesperson email
-                                            }
-                                        }
-                                    }
-                                );
-                            }
-                            else if ( entity.position == "Broker" ) {
+
                                 // check admin
                                 const adminFound = await this.adapter.findOne({
-                                    broker_license_number: "1234567890"
+                                    broker_license_number: "1234567890",
+                                    position: "Broker"
                                 });
-    
+
                                 if ( adminFound ) {
                                     // send request invite to admin
-                                    const doc = await this.adapter.updateById(
+                                    await this.adapter.updateById(
                                         adminFound._id,
                                         {
                                             $push: {
@@ -651,6 +693,27 @@ export default class UsersService extends Service{
                                             }
                                         }
                                     );
+                                }
+
+                                // check all data that have position of salesperson and the same broker license number
+                                // add salesperson that already registered before the broker
+                                const allData = await this.adapter.find();
+                                let finalSalesperson = <any>[];
+
+                                let salesperson = allData.filter(function(data: any) {
+                                    return data.broker_license_number === entity.broker_license_number && data.position === "Salesperson";
+                                });
+
+                                if (salesperson) {
+                                    salesperson.forEach( (data: any) => {
+                                        finalSalesperson.push({
+                                            invited: false,
+                                            email: data.email
+                                        });
+                                    });
+                                    // console.log(salesperson, finalSalesperson);
+
+                                    entity.invites = finalSalesperson; // add salesperson to the broker
                                 }
                             }
             
