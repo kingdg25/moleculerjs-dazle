@@ -1,11 +1,11 @@
 "use strict";
 import {Context, Service, ServiceBroker, ServiceSchema} from "moleculer";
 
+import { formatDistanceToNow } from "date-fns";
 import DbConnection from "../mixins/db.mixin";
-import { formatDistanceToNow } from 'date-fns';
 
 
-const ObjectID = require('mongodb').ObjectID;
+const ObjectID = require("mongodb").ObjectID;
 
 
 export default class ConnectionService extends Service{
