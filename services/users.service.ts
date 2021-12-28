@@ -13,6 +13,7 @@ const MailService = require("moleculer-mail");
 
 dotenv.config();
 const client = new OAuth2Client(process.env.GOOGLE_ID, process.env.GOOGLE_SECRET);
+const ObjectID = require("mongodb").ObjectID;
 
 export default class UsersService extends Service{
 
@@ -49,7 +50,8 @@ export default class UsersService extends Service{
                     "broker_license_number",
                     "email",
                     "token",
-                    "is_new_user"
+                    "is_new_user",
+                    "about_me"
                 ],
 				logging: true,
 
@@ -736,6 +738,48 @@ export default class UsersService extends Service{
                         }
 
                         return { success: false, error_type: "not_found", status: "Setup Profile Fail" };
+                    }
+                },
+
+                /**
+                 * Update user.
+                 *
+                 * @param {Object} user - User entity
+                 */
+                 update: {
+                    rest: {
+                        method: "PUT",
+                        path: "/update"
+                    },
+                    params: {
+                        user: { type: "object" },
+                    },
+                    /** @param {Context} ctx  */
+                    async handler(ctx) {
+                        const entity = ctx.params.user;
+        
+                        const found = await this.adapter.findOne({
+                            _id: new ObjectID(entity._id)
+                        });
+                        if (found) {
+                            const doc = await this.adapter.updateById(
+                                found._id,
+                                {
+                                    $set: {
+                                        firstname: entity.firstname,
+                                        lastname: entity.lastname,
+                                        mobile_number: entity.mobile_number,
+                                        about_me: entity.about_me
+                                    }
+                                }
+                            );
+                            const json = await this.transformDocuments(ctx, ctx.params, doc);
+                            await this.entityChanged("updated", json, ctx);
+            
+                            return { success: true, user: json, status: "Update Success" };
+                        }
+
+                        return { success: false, error_type: "not_found", status: "Update Fail" };
                     }
                 }
 
