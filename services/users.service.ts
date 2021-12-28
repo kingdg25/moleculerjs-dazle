@@ -212,11 +212,13 @@ export default class UsersService extends Service{
 
                             // check all data that have position of salesperson and the same broker license number
                             // add salesperson that already registered before the broker
-                            const allData = await this.adapter.find();
                             let finalSalesperson = <any>[];
 
-                            let salesperson = allData.filter(function(data: any) {
-                                return data.broker_license_number === entity.broker_license_number && data.position === "Salesperson";
+                            let salesperson = await this.adapter.find({
+                                query: {
+                                    broker_license_number: entity.broker_license_number,
+                                    position: "Salesperson"
+                                }
                             });
 
                             if (salesperson) {
@@ -705,11 +707,13 @@ export default class UsersService extends Service{
 
                                 // check all data that have position of salesperson and the same broker license number
                                 // add salesperson that already registered before the broker
-                                const allData = await this.adapter.find();
                                 let finalSalesperson = <any>[];
 
-                                let salesperson = allData.filter(function(data: any) {
-                                    return data.broker_license_number === entity.broker_license_number && data.position === "Salesperson";
+                                let salesperson = await this.adapter.find({
+                                    query: {
+                                        broker_license_number: entity.broker_license_number,
+                                        position: "Salesperson"
+                                    }
                                 });
 
                                 if (salesperson) {

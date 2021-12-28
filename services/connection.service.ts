@@ -13,10 +13,10 @@ export default class ConnectionService extends Service{
 	private DbMixin = new DbConnection("users").start();
 
     public async getTotalConnection(agent: any) {
-        const allData = await this.adapter.find();
-
-        let agentData = allData.filter(function(data: any) {
-            return data.broker_license_number === agent.broker_license_number;
+        let agentData = await this.adapter.find({
+            query: {
+                broker_license_number: agent.broker_license_number
+            }
         });
 
         return ( agent.position === "Broker" ) ? (agentData.length-1).toString() : "1";
