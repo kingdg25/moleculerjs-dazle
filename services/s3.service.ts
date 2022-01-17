@@ -6,6 +6,7 @@ import AWS from 'aws-sdk';
 import { formatDistanceToNow } from "date-fns";
 
 const mime = require('mime-types')
+const randomstring = require("randomstring");
 
 export default class ConnectionService extends Service{
 	
@@ -73,10 +74,13 @@ export default class ConnectionService extends Service{
 						});
 						const buffered_file = Buffer.from(base64, "base64");
 						const date_ = new Date();
-						
+						const randString = randomstring.generate({
+							length: 8,
+							capitalization: "uppercase"
+						  })
 						let upload_res: any = await s3.upload({
 							Bucket: 'brooky-attachments', // pass your bucket name
-							Key: `dazle/${date_.getFullYear()}/${date_.getMonth()+1}/${date_.getDate()}/${filename}`, // file will be saved as testBucket/contacts.csv
+							Key: `dazle/${date_.getFullYear()}/${date_.getMonth()+1}/${date_.getDate()}/${randString}_${filename}`, // file will be saved as testBucket/contacts.csv
 							Body: buffered_file,
 							ContentType: mime.lookup(filename),
 							ACL: "public-read"
