@@ -1,10 +1,12 @@
 "use strict";
-import {Context, Service, ServiceBroker, ServiceSchema} from "moleculer";
+import {Context, Service, ServiceBroker, ServiceSchema, Errors} from "moleculer";
 const { MoleculerError } = require("moleculer").Errors;
 import fs from 'fs';
 import AWS from 'aws-sdk';
-
 import { formatDistanceToNow } from "date-fns";
+
+const mime = require('mime-types')
+
 export default class ConnectionService extends Service{
 	
 	// @ts-ignore
@@ -61,32 +63,35 @@ export default class ConnectionService extends Service{
 						base64: { type: "string" }
                     },
 					async handler(ctx) {
-						//testttt pa need some s3 configuration to read url publicly
 						const filename = ctx.params.filename
 						const base64 = ctx.params.base64
-						console.log(process.env.AWS_ACCESS_KEY, process.env.AWS_SECRET_ACCESS_KEY)
+						let file_url = "";
 						const s3 = new AWS.S3({
 							accessKeyId: process.env.AWS_ACCESS_KEY,
 							secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 							region: "ap-southeast-1"
 						});
 						const buffered_file = Buffer.from(base64, "base64");
-						s3.upload({
+						const date_ = new Date();
+						
+						let upload_res: any = await s3.upload({
 							Bucket: 'brooky-attachments', // pass your bucket name
-							Key: filename, // file will be saved as testBucket/contacts.csv
-							Body: buffered_file
-						}, function(s3Err: any, data: any) {
+							Key: `dazle/${date_.getFullYear()}/${date_.getMonth()+1}/${date_.getDate()}/${filename}`, // file will be saved as testBucket/contacts.csv
+							Body: buffered_file,
+							ContentType: mime.lookup(filename),
+							ACL: "public-read"
+						}, await function(s3Err: any, data: any) {
 							if (s3Err) throw s3Err
-							console.log(`File uploaded successfully at ${data.Location}`)
+						}).promise().then((d) => {
+							file_url = d.Location;
+							return;
+						}).catch(e => {
+							throw new MoleculerError("Fail to Upload", 400, "Upload Error", { success: false, error_type: "file_upload_error", status: "Fail to upload file." });
 						});
 
-						// const params = {
-						// 	Bucket: 'brooky-attachments', // pass your bucket name
-						// 	Key: 'filename', // file will be saved as testBucket/contacts.csv
-						// 	Body: JSON.stringify(data, null, 2)
-						// };
+						if (!file_url) throw new MoleculerError("Fail to Upload", 400, "Upload Error", { success: false, error_type: "file_upload_error", status: "Fail to upload file." });
 						
-						return { success: true, status: "Got My Listings", file_url: "" };
+						return { success: true, status: "S3 Upload Successfully", data: { file_url: file_url } };
                     }
                 }
 
