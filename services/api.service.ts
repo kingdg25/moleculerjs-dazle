@@ -70,11 +70,11 @@ export default class ApiService extends Service {
 					bodyParsers: {
 						json: {
 							strict: false,
-							limit: "1MB",
+							limit: "20MB",
 						},
 						urlencoded: {
 							extended: true,
-							limit: "1MB",
+							limit: "20MB",
 						},
 					},
 
@@ -99,6 +99,28 @@ export default class ApiService extends Service {
 			},
 
 			methods: {
+				async authorize (ctx: any, route: any, req: any): Promise < any >  {
+					return;
+					const E = require("moleculer-web").Errors;
+					
+					const auth: string|null = req.headers.authorization;
+					if (auth && auth.startsWith("Bearer")) {
+						let token = auth.slice(7);
+						console.log(token);
+						if (token) {
+							const user = await this.adapter.findOne({
+								token: token,
+							});
+	
+							if (user) {
+								ctx.meta.user = user;
+								return await Promise.resolve(ctx);
+							} else return Promise.reject(new E.UnAuthorizedError("USER_NOT_FOUND"));
+						} else return Promise.reject(new E.UnAuthorizedError(E.ERR_INVALID_TOKEN));
+					} else return Promise.reject(new E.UnAuthorizedError(E.ERR_NO_TOKEN));
+				},
+				async authenticate (ctx: any, route: any, req: any): Promise < any >  {
+				}
 
 				/**
 				 * Authenticate the request. It checks the `Authorization` token value in the request header.
