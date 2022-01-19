@@ -25,6 +25,19 @@ export default class ConnectionService extends Service{
 			name: "listings",
 			mixins: [this.DbMixin],
 			settings: {
+                JWT_SECRET: process.env.JWT_SECRET || "jwt-secret",
+
+                /** MAIL **/
+                from: "no-reply@dwellu.online.com",
+                transport: {
+                    host: "smtp.gmail.com",
+                    service: "gmail",
+                    port: 2525,
+                    auth: {
+                        user: process.env.EMAIL_USER,
+                        pass: process.env.EMAIL_PASS,
+                    },
+                },
                 // Available fields in the responses
                 // fields: [
                 //     "_id"
@@ -37,23 +50,26 @@ export default class ConnectionService extends Service{
                         optional: true,
                         items: {
                             type: "string"
-                        }
+                        },
+						default: []
                     },
 					amenities: {
                         type: "array",
                         optional: true,
                         items: {
                             type: "string"
-                        }
+                        },
+						default: []
                     },
 					keywords: {
                         type: "array",
                         optional: true,
                         items: {
                             type: "string"
-                        }
+						},
+						default: []
                     },
-					price: { type: "number", convert: true, positive: true },
+					price: { type: "number", convert: true, positive: true, default: 0.0 },
 					time_period: { type: "string" }, // Sell or Rent
 					number_of_bedrooms: { type: "string" },
 					// number_of_bathrooms: { type: "string", convert: true, integer: true, default: () => 0 },
@@ -66,6 +82,7 @@ export default class ConnectionService extends Service{
 					landmark: { type: "string", optional: true },
 					description: { type: "string", optional: true, default: () => "" },
 					createdBy: { type: "string" }, // user id
+					view_type: { type: "string", optional: false, default: "public" }, //public or private
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
 				  }
