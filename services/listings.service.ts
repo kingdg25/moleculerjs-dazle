@@ -160,12 +160,51 @@ export default class ConnectionService extends Service{
 						let my_listings = await this.adapter.find({
 							query: {
 								createdBy: uid
-							}
+							},
+							sort: { createdAt: -1 },
 						});
 						
 						return { success: true, status: "Got My Listings", listings: my_listings };
                     }
-                }
+                },
+                getListingInProfile: {
+                    rest: {
+                        method: "GET",
+                        path: "/get-listings-in-profile/:user_id/:viewer_id"
+                    },
+                    params: {
+						user_id: { type: "string" },
+						viewer_id: { type: "string" }
+                    },
+					async handler(ctx) {
+						let listings: Array<Object> = [];
+						const user_id = ctx.params.user_id; // user to fetch listing
+						const viewer_id = ctx.params.viewer_id;
+						if (user_id===viewer_id) { // add more validation when authorization is enabled, validate if ctx.meta.user is equal to user_id
+							listings = await this.adapter.find({
+								query: {
+									createdBy: user_id
+								},
+								sort: { createdAt: -1 },
+							});
+						} else {
+							const has_connections = true;
+							// if viewer is not the user and the viewer has connection with user, get all the public listing of a user
+							if (has_connections) {
+								listings = await this.adapter.find({
+									query: {
+										createdBy: user_id,
+										view_type: "public"
+									},
+									sort: { createdAt: -1 },
+									// limit: 5
+								});
+							}
+						}
+						
+						return { success: true, status: "Listings Fetch", listings: listings, length: listings.length };
+                    }
+                },
 
 			},
 			methods: {
