@@ -4,9 +4,12 @@ import {Context, Service, ServiceBroker, ServiceSchema} from "moleculer";
 
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
+const jwt = require('jsonwebtoken');
 import { OAuth2Client } from "google-auth-library";
 import HTTPClientService from "moleculer-http-client";
 import DbConnection from "../mixins/db.mixin";
+
+const { MoleculerError } = require("moleculer").Errors;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MailService = require("moleculer-mail");
@@ -118,7 +121,41 @@ export default class UsersService extends Service{
 				 *  - remove
 				 */
 
-				// --- ADDITIONAL ACTIONS ---
+                // --- ADDITIONAL ACTIONS ---
+                
+                // JWT token generator
+
+                generateJWToken: {
+                    params: {
+                        user_object: "object"
+                    },
+                    async handler(ctx) {
+                        const user_object = ctx.params.user_object;
+
+                        if (!user_object) return new MoleculerError("No user_object found", 400, "NO_USER_OBJ_FOUND", { success: false, error_type: "not_user_obj_found", status: "No user_object found" });
+
+                        return jwt.sign(user_object, process.env.JWT_SECRET, { expiresIn: process.env.JWT_SECRET_EXPIRES_IN });
+                    }
+
+                },
+                verifyJWToken: {
+                    params: {
+                        token: "string"
+                    },
+                    async handler(ctx) {
+                        const token = ctx.params.token;
+
+                        if (!token) return new MoleculerError("No token found", 400, "no_token_found", { success: false, error_type: "no_token_found", status: "No token found" });
+                        try {
+                            const verified_user = jwt.verify(token, process.env.JWT_SECRET);
+                            return verified_user;
+                        } catch (error) {
+                            console.log("NAG ERR")
+                            return;
+                        }
+                    }
+
+                },
 
 				/**
                  * Register a new user.
@@ -241,13 +278,14 @@ export default class UsersService extends Service{
                             10
                         );
                         entity.login_type = 'email&pass';
-                        entity.token = crypto.randomBytes(50 / 2).toString("hex");
+                        // entity.token = crypto.randomBytes(50 / 2).toString("hex");
 
                         const doc = await this.adapter.insert(entity);
                         const json = await this.transformDocuments(ctx, ctx.params, doc);
                         await this.entityChanged("created", json, ctx);
 
-        
+                        json.token = await broker.call("users.generateJWToken", {user_object: json});
+                        
                         return { success: true, user: json, status: "Registration Success" };
                         
                     }
@@ -291,6 +329,7 @@ export default class UsersService extends Service{
                                 if ( foundInvited ) {
                                     const json = await this.transformDocuments(ctx, ctx.params, found);
                                     await this.entityChanged("updated", json, ctx);
+                                    json.token = await broker.call("users.generateJWToken", {user_object: json});
 
                                     return { success: true, user: json, status: "Login success" };
                                 }
