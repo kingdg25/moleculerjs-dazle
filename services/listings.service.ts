@@ -121,11 +121,11 @@ export default class ConnectionService extends Service{
                     },
 					async handler(ctx) {
 						// console.log(ctx);
-						const isAuthenticated: any = await broker.call("users.isAuthenticated", { token: ctx.params.user_token});
-						// console.log(isAuthenticated)
-						if ('success' in isAuthenticated) {
-							if (!isAuthenticated.success) this.authenticationError();
-						} else {this.authenticationError()}
+						// const isAuthenticated: any = await broker.call("users.isAuthenticated", { token: ctx.params.user_token});
+						
+						// if ('success' in isAuthenticated) {
+						// 	if (!isAuthenticated.success) this.authenticationError();
+						// } else {this.authenticationError()}
 
 						//create listing
 						console.log(ctx.params.property);
