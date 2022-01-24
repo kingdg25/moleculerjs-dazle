@@ -142,17 +142,15 @@ export default class ApiService extends Service {
 				async authorize (ctx: any, route: any, req: any): Promise < any >  {
 					console.log("AUTHORIZING ")
 					// return Promise.reject(new E.UnAuthorizedError("USER_NOT_FOUND"))
-					return;
+					// return;
 					
 					const auth: string|null = req.headers.authorization;
 					if (auth && auth.startsWith("Bearer")) {
 						let token = auth.slice(7);
 						console.log(token);
 						if (token) {
-							const user = await this.adapter.findOne({
-								token: token,
-							});
-	
+							const user = await broker.call("users.verifyJWToken", {token: token});
+							console.log("WEW", user);
 							if (user) {
 								ctx.meta.user = user;
 								return await Promise.resolve(ctx);
