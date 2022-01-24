@@ -1,6 +1,7 @@
 import {IncomingMessage} from "http";
 import {Service, ServiceBroker, Context} from "moleculer";
 import ApiGateway from "moleculer-web";
+const E = require("moleculer-web").Errors;
 
 export default class ApiService extends Service {
 
@@ -29,7 +30,7 @@ export default class ApiService extends Service {
 					authentication: false,
 
 					// Enable authorization. Implement the logic into `authorize` method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Authorization
-					authorization: false,
+					authorization: true,
 
 					// The auto-alias feature allows you to declare your route alias directly in your services.
 					// The gateway will dynamically build the full routes from service schema.
@@ -83,6 +84,45 @@ export default class ApiService extends Service {
 
 					// Enable/disable logging
 					logging: true,
+				},
+				{
+					path: "/auth",
+					whitelist: [
+						"**",
+					],
+					// Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
+					use: [],
+					// Enable/disable parameter merging method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Disable-merging
+					mergeParams: true,
+					authentication: false,
+					authorization: false,
+					autoAliases: false,
+
+					aliases: {
+						"POST login": "users.login",
+						"POST register": "users.register",
+						"POST forgot-password": "users.forgotPassword",
+						"POST reset-password": "users.resetPassword",
+						"POST social-login": "users.socialLogin",
+						"POST is-new-user": "users.isNewUser",
+						"POST check-license-number": "users.checkLicenseNumber",
+						"POST is-authenticated": "users.isAuthenticated",
+						"PUT setup-profile": "users.setupProfile",
+					},
+					callingOptions: {},
+
+					bodyParsers: {
+						json: {
+							strict: false,
+							limit: "20MB",
+						},
+						urlencoded: {
+							extended: true,
+							limit: "20MB",
+						},
+					},
+					mappingPolicy: "restrict",
+					logging: true,
 				}],
 				// Do not log client side errors (does not log an error response when the error.code is 400<=X<500)
 				log4XXResponses: false,
@@ -100,8 +140,9 @@ export default class ApiService extends Service {
 
 			methods: {
 				async authorize (ctx: any, route: any, req: any): Promise < any >  {
+					console.log("AUTHORIZING ")
+					// return Promise.reject(new E.UnAuthorizedError("USER_NOT_FOUND"))
 					return;
-					const E = require("moleculer-web").Errors;
 					
 					const auth: string|null = req.headers.authorization;
 					if (auth && auth.startsWith("Bearer")) {
