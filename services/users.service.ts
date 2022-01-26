@@ -127,6 +127,29 @@ export default class UsersService extends Service{
                 
                 // JWT token generator
 
+                getUsersFromListOfIds: { // get users from ids
+                    params: {
+                        user_ids: "array"
+                    },
+                    async handler(ctx) {
+                        let user_ids: Array<any> = ctx.params.user_ids || [];
+                        let users_profiles: Array<object> = [];
+                        console.log(user_ids)
+                        users_profiles = await this.adapter.find({
+                            query: {
+                                _id: {
+                                    $in: user_ids.map(u => new ObjectID(u))
+                                }
+                            },
+                            // sort: {_id: -1}
+                        });
+                        users_profiles = await this.transformDocuments(ctx, ctx.params, users_profiles)
+                        console.log(users_profiles)
+                        
+
+                        return users_profiles;
+                    }
+                },
                 generateJWToken: {
                     params: {
                         user_object: "object"
