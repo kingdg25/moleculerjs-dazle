@@ -54,6 +54,7 @@ export default class UsersService extends Service{
                     "email",
                     "token",
                     "is_new_user",
+                    "email_verified",
                     "about_me"
                 ],
 				logging: true,
@@ -90,6 +91,7 @@ export default class UsersService extends Service{
                             }
                         },
                     },
+                    email_verified: { type: "boolean", default: false },
                     verified: { type: "boolean", default: false },
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
@@ -145,7 +147,7 @@ export default class UsersService extends Service{
                     async handler(ctx) {
                         const token = ctx.params.token;
 
-                        if (!token) return new MoleculerError("No token found", 400, "no_token_found", { success: false, error_type: "no_token_found", status: "No token found" });
+                        if (!token) return;
                         try {
                             const verified_user = jwt.verify(token, process.env.JWT_SECRET);
                             return verified_user;
