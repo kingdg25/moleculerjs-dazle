@@ -92,6 +92,58 @@ export default class NotifyService extends Service{
 						};
 
 					},
+				},
+				notifyToMobile: {
+					params: {
+						mobile_number: "string",
+						message: "string"
+					},
+					async handler(ctx) {
+						const mobileNumber = ctx.params.mobile_number;
+						const message = ctx.params.message;
+
+						if (message && mobileNumber) {
+							try {
+								const response = await this._post("https://portal.bulkgate.com/api/1.0/simple/promotional",{
+									json: {
+										application_id: process.env.SMS_APP_ID,
+										application_token: process.env.SMS_APP_TOKEN,
+										number: mobileNumber,
+										text: message,
+										sender_id: "6272",
+										sender_id_value: "BROOKY"
+									}
+								});
+								return {success: ( response ) ? true : false, status: ( response ) ? "Success" : "Failed"}
+							} catch (error) {
+								return {success: false, status: "Failed"}
+							}
+						}
+					}
+				},
+				notifyToEmail: {
+					params: {
+						email: "string",
+						html: "string"
+					},
+					async handler(ctx) {
+						const email = ctx.params.email;
+						const html = ctx.params.html;
+						if (email){
+							console.log("SEND EMAIL")
+							try {
+								const response = await this.send({
+									to: email,
+									subject: "Dazle App Invitation",
+									html: html,
+								});
+								console.log(response)
+								return {success: ( response ) ? true : false, status: ( response ) ? "Success" : "Failed"}
+							} catch (error) {
+								return {success: false, status: "Failed"}
+							}
+						}
+					}
 				}
 
 			},
