@@ -124,18 +124,20 @@ export default class NotifyService extends Service{
 				notifyToEmail: {
 					params: {
 						email: "string",
-						html: "string"
+						subject: "string",
+						content: "string"
 					},
 					async handler(ctx) {
 						const email = ctx.params.email;
-						const html = ctx.params.html;
+						const subject = ctx.params.subject;
+						const content = ctx.params.content;
 						if (email){
 							console.log("SEND EMAIL")
 							try {
 								const response = await this.send({
 									to: email,
-									subject: "Dazle App Invitation",
-									html: html,
+									subject: subject,
+									html: content,
 								});
 								console.log(response)
 								return {success: ( response ) ? true : false, status: ( response ) ? "Success" : "Failed"}
