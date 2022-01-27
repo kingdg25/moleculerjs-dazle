@@ -43,7 +43,7 @@ export default class EmailVerificationService extends Service{
 			actions: {
 				createOrFetchEmailVerification: {
 					params: {
-						email: "string",
+						email: "email",
 						user_id: "string"
 					},
                     async handler(ctx) {
@@ -88,7 +88,7 @@ export default class EmailVerificationService extends Service{
 				},
 				createAndSendEmailVerification: {
 					params: {
-						email: "string",
+						email: "email",
 						user_id: "string"
 					},
                     async handler(ctx) {
