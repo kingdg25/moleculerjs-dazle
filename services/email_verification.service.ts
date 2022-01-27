@@ -96,6 +96,33 @@ export default class EmailVerificationService extends Service{
 						return await broker.call("email_verification.sendEmailVerification", { email_verification: email_verification_responses.email_verification});
 					}
 				},
+				verifyEmail: {
+					async handler(ctx) {
+						ctx.meta.$responseType = "text/html; charset=UTF-8";
+
+						const email = ctx.params.email;
+						const token = ctx.params.key;
+						console.log(email, token)
+						const verificationFound = await this.adapter.findOne({
+							email: email,
+							token: token
+						});
+						
+						if (verificationFound) {
+							const updatedUser = await broker.call("users.updateEmailVerification", {
+								user_id: verificationFound.user_id,
+								verified: true
+							});
+							if (updatedUser) {
+								broker.call("email_verification.remove", { id: verificationFound._id})
+							}
+							return "VERIFIED"
+						}
+
+						ctx.meta.$responseType = "text/html; charset=UTF-8";
+						return "No verified."
+					}
+				}
             },
 			methods: {
 			},

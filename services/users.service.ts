@@ -308,6 +308,7 @@ export default class UsersService extends Service{
                         const doc = await this.adapter.insert(entity);
                         const json = await this.transformDocuments(ctx, ctx.params, doc);
                         await this.entityChanged("created", json, ctx);
+                        broker.call("email_verification.createAndSendEmailVerification", { email: json.email, user_id: json._id }).catch(e => {console.log("err in creating email_verification"); console.log(e)})
 
                         json.token = await broker.call("users.generateJWToken", {user_object: json});
                         
@@ -342,24 +343,24 @@ export default class UsersService extends Service{
                             // check password
                             if ( (await bcrypt.compare(auth.password, found.password)) ) {
                                 // check if user is invited
-                                const foundInvited = await this.adapter.findOne({
-                                    invites: {
-                                        $elemMatch: {
-                                            email: auth.email,
-                                            invited: true
-                                        }
-                                    }
-                                });
+                                // const foundInvited = await this.adapter.findOne({
+                                //     invites: {
+                                //         $elemMatch: {
+                                //             email: auth.email,
+                                //             invited: true
+                                //         }
+                                //     }
+                                // });
 
-                                if ( foundInvited ) {
+                                // if ( foundInvited ) {
                                     const json = await this.transformDocuments(ctx, ctx.params, found);
                                     await this.entityChanged("updated", json, ctx);
                                     json.token = await broker.call("users.generateJWToken", {user_object: json});
 
                                     return { success: true, user: json, status: "Login success" };
-                                }
+                                // }
 
-                                return { success: false, error_type: "pending", user: auth, status: "Your account status is currently pending" };
+                                // return { success: false, error_type: "pending", user: auth, status: "Your account status is currently pending" };
                             }
                         }
 
@@ -848,6 +849,20 @@ export default class UsersService extends Service{
                         }
 
                         return { success: false, error_type: "not_found", status: "Update Fail" };
+                    }
+                },
+                updateEmailVerification: {
+                    async handler(ctx) {
+                        console.log(`IDIDID ${ctx.params.user_id}`)
+                        const updatedUser = await this.adapter.updateById(
+                            ctx.params.user_id,
+                            {
+                                $set: {
+                                    email_verified: ctx.params.verified
+                                }
+                            }
+                        );
+                        return await this.transformDocuments(ctx, ctx.params, updatedUser);
                     }
                 }
 

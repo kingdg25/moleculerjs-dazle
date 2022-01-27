@@ -111,6 +111,7 @@ export default class ApiService extends Service {
 						"POST notification/notify-user": "notify.notifyUser",
 						"POST notification/notify-to-mobile": "notify.notifyToMobile",
 						"POST notification/notify-to-email": "notify.notifyToEmail",
+						"GET email-verify/:email/:key": "email_verification.verifyEmail",
 						// "POST email-verification/create": "email_verification.createOrFetchEmailVerification",
 						// "POST email-verification/send-email": "email_verification.sendEmailVerification",
 						// "POST email-verification/create-and-send": "email_verification.createAndSendEmailVerification",
