@@ -1,0 +1,110 @@
+"use strict";
+import {Context, Service, ServiceBroker, ServiceSchema} from "moleculer";
+
+import { formatDistanceToNow } from "date-fns";
+import crypto from 'crypto';
+import DbConnection from "../mixins/db.mixin";
+
+
+const ObjectID = require("mongodb").ObjectID;
+
+
+export default class EmailVerificationService extends Service{
+
+	private DbMixin = new DbConnection("email_verification").start();
+
+	// @ts-ignore
+	public  constructor(public broker: ServiceBroker, schema: ServiceSchema<{}> = {}) {
+		super(broker);
+		this.parseServiceSchema(Service.mergeSchemas({
+			name: "email_verification",
+			mixins: [this.DbMixin],
+			settings: {
+				// Available fields in the responses
+				logging: true,
+				fields: [
+					"email",
+					"token",
+					"user_id"
+                ],
+				entityValidator: {
+                    email: { type: "string" },
+					user_id: { type: "string" },
+					token: { type: "string", default: crypto.randomBytes(50 / 2).toString("hex") },
+                    createdAt: { type: "date", default: () => new Date() },
+                    updatedAt: { type: "date", default: () => new Date() },
+                }
+			},
+			hooks: {
+				before: {
+					
+				},
+			},
+			actions: {
+				createOrFetchEmailVerification: {
+					params: {
+						email: "string",
+						user_id: "string"
+					},
+                    async handler(ctx) {
+						const email = ctx.params.email;
+						const user_id = ctx.params.user_id;
+						const emailFound = await this.adapter.findOne({
+							email: email,
+							user_id: user_id
+						});
+						
+						if (emailFound) {
+							const json = await this.transformDocuments(ctx, ctx.params, emailFound);
+							return {
+								success: true,
+								email_verification: json,
+								status: "An email verification found."
+							}
+						}
+						
+						await this.validateEntity(ctx.params);
+						const doc = await this.adapter.insert(ctx.params);
+                        const json = await this.transformDocuments(ctx, ctx.params, doc);
+						await this.entityChanged("created", json, ctx);
+                        return { success: true, email_verification: json, status: "Email Verification Created." };
+					}
+				},
+				sendEmailVerification: {
+					params: {
+						email_verification: "object"
+					},
+                    async handler(ctx) {
+						const email_verification = ctx.params.email_verification;
+						const email = email_verification.email;
+						const token = email_verification.token;
+												
+						return await broker.call("notify.notifyToEmail", {
+							email: email,
+							subject: "Dazle Email Verification",
+							content: `Hello there! Just click the link below to verify your email <hr><hr> <a>Click Here</a> ${email} ${token}`
+						});
+					}
+				},
+				createAndSendEmailVerification: {
+					params: {
+						email: "string",
+						user_id: "string"
+					},
+                    async handler(ctx) {
+						const email_verification_responses: any = await broker.call("email_verification.createOrFetchEmailVerification", ctx.params);
+						return await broker.call("email_verification.sendEmailVerification", { email_verification: email_verification_responses.email_verification});
+					}
+				},
+            },
+			methods: {
+			},
+			/**
+			 * Loading sample data to the collection.
+			async afterConnected() {
+			 await this.adapter.collection.createIndex({ name: 1 });
+			},
+			 */
+		}, schema));
+	}
+}
