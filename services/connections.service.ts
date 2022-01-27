@@ -8,7 +8,7 @@ import DbConnection from "../mixins/db.mixin";
 const ObjectID = require("mongodb").ObjectID;
 
 
-export default class ConnectionService extends Service{
+export default class ConnectionsService extends Service{
 
 	private DbMixin = new DbConnection("connections").start();
 
