@@ -82,11 +82,15 @@ export default class EmailVerificationService extends Service{
 						return await broker.call("notify.notifyToEmail", {
 							email: email,
 							subject: "Dazle Email Verification",
-							content: `Hello there! Just click the link below to verify your email <hr><hr> <a>Click Here</a> ${email} ${token}`
+							content: `Hello there! Just click the link below to verify your email <hr><hr> <a href="${process.env.DOMAIN_NAME}/email-verify/${email}/${token}">Click Here</a> `
 						});
 					}
 				},
 				createAndSendEmailVerification: {
+					rest: {
+                        method: "POST",
+                        path: "/send-email-verification"
+                    },
 					params: {
 						email: "email",
 						user_id: "string"
