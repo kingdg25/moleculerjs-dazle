@@ -506,6 +506,7 @@ export default class UsersService extends Service{
                                 if ( foundInvited ) {
                                     const json = await this.transformDocuments(ctx, ctx.params, found);
                                     await this.entityChanged("updated", json, ctx);
+                                    json.token = await broker.call("users.generateJWToken", {user_object: json});
                         
                                     return { success: true, user: json, status: "Social login Success" };
                                 }
@@ -537,6 +538,7 @@ export default class UsersService extends Service{
                                     const doc = await this.adapter.insert(entity);
                                     const json = await this.transformDocuments(ctx, ctx.params, doc);
                                     await this.entityChanged("created", json, ctx);
+                                    json.token = await broker.call("users.generateJWToken", {user_object: json});
         
                                     return { user: json, success: true, status: "Google login Success" };
                                 
@@ -561,6 +563,7 @@ export default class UsersService extends Service{
                                     const doc = await this.adapter.insert(entity);
                                     const json = await this.transformDocuments(ctx, ctx.params, doc);
                                     await this.entityChanged("created", json, ctx);
+                                    json.token = await broker.call("users.generateJWToken", {user_object: json});
         
                                     return { user: json, success: true, status: "facebook login Success" };
                                 
@@ -802,6 +805,7 @@ export default class UsersService extends Service{
                             );
                             const json = await this.transformDocuments(ctx, ctx.params, doc);
                             await this.entityChanged("updated", json, ctx);
+                            json.token = await broker.call("users.generateJWToken", {user_object: json});
             
                             return { success: true, user: json, status: "Setup Profile Success" };
                         }
