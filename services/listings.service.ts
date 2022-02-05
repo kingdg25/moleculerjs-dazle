@@ -109,7 +109,7 @@ export default class ConnectionService extends Service{
 				 *  - remove
 				 */
 
-				// gi creatan nako ug mga following method ang mga basic REST APIs(POST,GET,PUT,DELETE) with empty function, para dili siya mahilabtan like (maka post(create), get(get), PUT(update) etc) publicly
+				// gi creatan(override) nako ug mga following/other method ang mga basic REST APIs(POST,GET,PUT,DELETE) with empty function, para dili siya mahilabtan like (maka post(create), get(get), PUT(update) etc) publicly.
 				list: {async handler(ctx) {}},
 				create: {async handler(ctx) {}},
 				get: {async handler(ctx) {}},
@@ -211,7 +211,8 @@ export default class ConnectionService extends Service{
 						
 						return { success: true, status: "Listings Fetch", listings: listings, length: listings.length };
                     }
-                },
+				},
+				// override the update method or the "PUT" REST API
                 update: {
                     rest: {
                         method: "PUT",
