@@ -109,6 +109,13 @@ export default class ConnectionService extends Service{
 				 *  - remove
 				 */
 
+				// gi creatan nako ug mga following method ang mga basic REST APIs(POST,GET,PUT,DELETE) with empty function, para dili siya mahilabtan like (maka post(create), get(get), PUT(update) etc) publicly
+				list: {async handler(ctx) {}},
+				create: {async handler(ctx) {}},
+				get: {async handler(ctx) {}},
+				remove: {async handler(ctx) {}},
+				// update: {async handler(ctx) {}},
+
 				// --- ADDITIONAL ACTIONS ---
                 createListing: {
                     rest: {
@@ -205,6 +212,39 @@ export default class ConnectionService extends Service{
 						return { success: true, status: "Listings Fetch", listings: listings, length: listings.length };
                     }
                 },
+                update: {
+                    rest: {
+                        method: "PUT",
+                        path: "/update-listing/:id"
+					},
+					params: {
+						id: "string",
+						data: "object"
+					},
+					async handler(ctx) {
+						const listing_id = ctx.params.id; // listing id
+						const data = ctx.params.data;
+						const current_user = ctx.meta.user;
+						
+                        const listing = await this.adapter.findOne({
+                            _id: new ObjectID(listing_id)
+						});
+						if (listing) {
+							if (listing.createdBy === current_user._id) {
+								const doc = await this.adapter.updateById(
+									listing._id,
+									{
+										$set: data
+									}
+								);
+								const json = await this.transformDocuments(ctx, ctx.params, doc);
+								await this.entityChanged("updated", json, ctx);
+								return { success: true, listing: json, status: "Update Success" };
+							} else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to update this listing." };
+						}
+						return { success: false, error_type: "not_found", status: "Update Fail" };
+					}
+				}
 
 			},
 			methods: {
