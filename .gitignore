@@ -65,3 +65,5 @@ typings/
 
 # Don't track transpiled files
 dist/
+
+data/
