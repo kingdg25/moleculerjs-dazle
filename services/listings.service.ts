@@ -112,11 +112,30 @@ export default class ConnectionService extends Service{
 				// gi creatan(override) nako ug mga following/other method ang mga basic REST APIs(POST,GET,PUT,DELETE) with empty function, para dili siya mahilabtan like (maka post(create), get(get), PUT(update) etc) publicly.
 				list: {async handler(ctx) {}},
 				create: {async handler(ctx) {}},
-				get: {async handler(ctx) {}},
 				remove: {async handler(ctx) {}},
 				// update: {async handler(ctx) {}},
 
 				// --- ADDITIONAL ACTIONS ---
+				get: {
+					async handler(ctx) {
+						const id = ctx.params.id;
+						const current_user = ctx.meta.user;
+
+                        let doc = await this.adapter.findOne({
+                            _id: new ObjectID(id)
+						});
+						if (doc) {
+							if (doc.createdBy==current_user._id || doc.view_type=="pubic") {
+								const json = await this.transformDocuments(ctx, ctx.params, doc);
+								return {success: true, listing: doc, status: "Listing fetched."}
+							}
+							// else if (await has_connections(current_user, user_connection)) {
+								// TODO: kung naa nay connections
+							// }
+							else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to view this listing." };
+						}
+					}
+				},
                 createListing: {
                     rest: {
                         method: "POST",
