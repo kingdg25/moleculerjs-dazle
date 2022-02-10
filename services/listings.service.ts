@@ -133,7 +133,7 @@ export default class ConnectionService extends Service{
 								// TODO: kung naa nay connections
 							// }
 							else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to view this listing." };
-						}
+						} else return { success: false, error_type: "not_found", status: "It seems the listing is not available." };
 					}
 				},
                 createListing: {
