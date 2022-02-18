@@ -55,7 +55,8 @@ export default class UsersService extends Service{
                     "token",
                     "is_new_user",
                     "email_verified",
-                    "about_me"
+                    "about_me",
+                    "profile_picture"
                 ],
 				logging: true,
 
@@ -93,6 +94,7 @@ export default class UsersService extends Service{
                     },
                     email_verified: { type: "boolean", default: false },
                     verified: { type: "boolean", default: false },
+                    profile_picture: { type: "string", optional: true, default: () => ""},
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
                 },
@@ -842,7 +844,8 @@ export default class UsersService extends Service{
                                         firstname: entity.firstname,
                                         lastname: entity.lastname,
                                         mobile_number: entity.mobile_number,
-                                        about_me: entity.about_me
+                                        about_me: entity.about_me,
+                                        profile_picture: entity.profile_picture
                                     }
                                 }
                             );
