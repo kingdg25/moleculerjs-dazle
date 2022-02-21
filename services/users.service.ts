@@ -722,21 +722,21 @@ export default class UsersService extends Service{
                                     broker_license_number: entity.broker_license_number,
                                     position: "Broker"
                                 });
-                                if (brokerFound){
-                                    // send request invite to broker
-                                    await this.adapter.updateById(
-                                        brokerFound._id,
-                                        {
-                                            $push: {
-                                                invites: {
-                                                    invited: false,
-                                                    email: entity.email, // salesperson email
-                                                    date_modified: new Date()
-                                                }
-                                            }
-                                        }
-                                    );
-                                }
+                                // if (brokerFound){
+                                //     // send request invite to broker
+                                //     await this.adapter.updateById(
+                                //         brokerFound._id,
+                                //         {
+                                //             $push: {
+                                //                 invites: {
+                                //                     invited: false,
+                                //                     email: entity.email, // salesperson email
+                                //                     date_modified: new Date()
+                                //                 }
+                                //             }
+                                //         }
+                                //     );
+                                // }
                             }
                             else if ( entity.position == "Broker" ) {
                                 // check broker license number
@@ -753,50 +753,50 @@ export default class UsersService extends Service{
                                 }
 
 
-                                // check admin
-                                const adminFound = await this.adapter.findOne({
-                                    broker_license_number: "1234567890",
-                                    position: "Broker"
-                                });
+                                // // check admin
+                                // const adminFound = await this.adapter.findOne({
+                                //     broker_license_number: "1234567890",
+                                //     position: "Broker"
+                                // });
 
-                                if ( adminFound ) {
-                                    // send request invite to admin
-                                    await this.adapter.updateById(
-                                        adminFound._id,
-                                        {
-                                            $push: {
-                                                invites: {
-                                                    invited: false,
-                                                    email: entity.email, // broker email
-                                                    date_modified: new Date()
-                                                }
-                                            }
-                                        }
-                                    );
-                                }
+                                // if ( adminFound ) {
+                                //     // send request invite to admin
+                                //     await this.adapter.updateById(
+                                //         adminFound._id,
+                                //         {
+                                //             $push: {
+                                //                 invites: {
+                                //                     invited: false,
+                                //                     email: entity.email, // broker email
+                                //                     date_modified: new Date()
+                                //                 }
+                                //             }
+                                //         }
+                                //     );
+                                // }
 
-                                // check all data that have position of salesperson and the same broker license number
-                                // add salesperson that already registered before the broker
-                                let finalSalesperson = <any>[];
+                                // // check all data that have position of salesperson and the same broker license number
+                                // // add salesperson that already registered before the broker
+                                // let finalSalesperson = <any>[];
 
-                                let salesperson = await this.adapter.find({
-                                    query: {
-                                        broker_license_number: entity.broker_license_number,
-                                        position: "Salesperson"
-                                    }
-                                });
+                                // let salesperson = await this.adapter.find({
+                                //     query: {
+                                //         broker_license_number: entity.broker_license_number,
+                                //         position: "Salesperson"
+                                //     }
+                                // });
 
-                                if (salesperson) {
-                                    salesperson.forEach( (data: any) => {
-                                        finalSalesperson.push({
-                                            invited: false,
-                                            email: data.email
-                                        });
-                                    });
-                                    // console.log(salesperson, finalSalesperson);
+                                // if (salesperson) {
+                                //     salesperson.forEach( (data: any) => {
+                                //         finalSalesperson.push({
+                                //             invited: false,
+                                //             email: data.email
+                                //         });
+                                //     });
+                                //     // console.log(salesperson, finalSalesperson);
 
-                                    entity.invites = finalSalesperson; // add salesperson to the broker
-                                }
+                                //     entity.invites = finalSalesperson; // add salesperson to the broker
+                                // }
                             }
             
                             const doc = await this.adapter.updateById(
