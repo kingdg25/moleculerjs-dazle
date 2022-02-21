@@ -120,8 +120,8 @@ export default class EmailVerificationService extends Service{
 							if (updatedUser) {
 								broker.call("email_verification.remove", { id: verificationFound._id})
 							}
-
-							let html:string = await fs.readFile(`${process.cwd()}/templates/email/email_verification.html`, 'utf8');
+							// READ FILE .html
+							let html:string = await fs.readFile(`${process.cwd()}/templates/email/email_verified.html`, 'utf8');
 							return html
 						}
 
