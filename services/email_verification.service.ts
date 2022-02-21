@@ -4,7 +4,7 @@ import {Context, Service, ServiceBroker, ServiceSchema} from "moleculer";
 import { formatDistanceToNow } from "date-fns";
 import crypto from 'crypto';
 import DbConnection from "../mixins/db.mixin";
-
+import { promises as fs } from 'fs';
 
 const ObjectID = require("mongodb").ObjectID;
 
@@ -120,11 +120,20 @@ export default class EmailVerificationService extends Service{
 							if (updatedUser) {
 								broker.call("email_verification.remove", { id: verificationFound._id})
 							}
-							return "VERIFIED"
+
+							let html:string = await fs.readFile(`${process.cwd()}/templates/email/email_verification.html`, 'utf8');
+							return html
 						}
 
 						ctx.meta.$responseType = "text/html; charset=UTF-8";
 						return "No verified."
+					}
+				},
+				readTemplate: {
+					async handler(ctx) {
+						ctx.meta.$responseType = "text/html; charset=UTF-8";
+						let html:any = await fs.readFile(`${process.cwd()}/templates/email/email_verification.html`, 'utf8');
+						return html;
 					}
 				}
             },
