@@ -239,7 +239,7 @@ export default class UsersService extends Service{
                             // check broker license number
                             const brokerLicenseNumberFound = await this.adapter.findOne({
                                 broker_license_number: entity.broker_license_number,
-                                position: "Broker"
+                                position: "Broker" // TODO: add condition email_verified
                             });
                             if (brokerLicenseNumberFound) {
                                 return {
@@ -503,15 +503,15 @@ export default class UsersService extends Service{
                                     }
                                 });
                         
-                                if ( foundInvited ) {
+                                // if ( foundInvited ) {
                                     const json = await this.transformDocuments(ctx, ctx.params, found);
                                     await this.entityChanged("updated", json, ctx);
                                     json.token = await broker.call("users.generateJWToken", {user_object: json});
                         
                                     return { success: true, user: json, status: "Social login Success" };
-                                }
+                                // }
                         
-                                return { success: false, error_type: "pending", user: found, status: "Your account status is currently pending" };
+                                // return { success: false, error_type: "pending", user: found, status: "Your account status is currently pending" };
                             }
                         
                             return { success: false, error_type: "no_setup_profile", user: found, status: `${found.login_type} login fail` };
