@@ -126,7 +126,7 @@ export default class EmailVerificationService extends Service{
 						}
 
 						ctx.meta.$responseType = "text/html; charset=UTF-8";
-						let html:any = await fs.readFile(`${process.cwd()}/templates/email/email_not_veried.html`, 'utf8');
+						let html:any = await fs.readFile(`${process.cwd()}/templates/email/email_not_verified.html`, 'utf8');
 						return html;
 					}
 				},
