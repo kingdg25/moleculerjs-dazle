@@ -75,7 +75,7 @@ export default class ConnectionService extends Service{
 					// number_of_bathrooms: { type: "string", convert: true, integer: true, default: () => 0 },
 					number_of_bathrooms: { type: "string" },
 					number_of_parking_space: { type: "string" },
-					total_area: { type: "string" },
+					total_area: { type: "number", convert: true, positive: true, default: 0.0 },
 					is_your_property: { type: "string" },  // is the property furnished ? or not ?
 					district: { type: "string", optional: true },
 					city: { type: "string" },
@@ -264,7 +264,36 @@ export default class ConnectionService extends Service{
 						}
 						return { success: false, error_type: "not_found", status: "Update Fail" };
 					}
+				},
+				deleteListing: {
+					rest: {
+                        method: "DELETE",
+                        path: "/delete-listing/:id"
+					},
+					params: {
+						id: "string"
+					},
+					async handler(ctx) {
+						const id = ctx.params.id;
+						const current_user = ctx.meta.user;
+
+                        let listing = await this.adapter.findOne({
+                            _id: new ObjectID(id)
+						});
+						if (listing) {
+							if (listing.createdBy==current_user._id) {
+								const doc = await this.adapter.removeById(id);
+								if (doc){
+								const json = await this.transformDocuments(ctx, ctx.params, doc);
+								return {success: true, deletedListing: doc, status: "Listing deleted."}
+								} else return { success: false, error_type: "delete_error", status: "An error occured while trying to delete the listing." };
+								
+							}
+							else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to delete this listing." };
+						} else return { success: false, error_type: "not_found", status: "It seems the listing is not available." };
 				}
+				}
+
 
 			},
 			methods: {
