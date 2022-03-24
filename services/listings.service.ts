@@ -70,7 +70,7 @@ export default class ConnectionService extends Service{
 						default: []
                     },
 					price: { type: "number", convert: true, positive: true, default: 0.0 },
-					time_period: { type: "string" }, // Sell or Rent
+					time_period: { type: "string", optional: true, default: () => "" }, // yearly or monthly
 					number_of_bedrooms: { type: "string" },
 					// number_of_bathrooms: { type: "string", convert: true, integer: true, default: () => 0 },
 					number_of_bathrooms: { type: "string" },
