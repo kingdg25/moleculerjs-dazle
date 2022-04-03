@@ -111,7 +111,7 @@ export default class ConnectionService extends Service{
                             // check filter if not empty
                             const filter_by_name = ctx.params.filter_by_name;
                             if ( filter_by_name ) {
-                                finalInvites = finalInvites.filter(function(invite: any) {
+                                finalInvites = await finalInvites.filter(function(invite: any) {
                                     return invite.displayname.toLowerCase().includes(filter_by_name.toLowerCase());
                                 });
                             }
@@ -123,7 +123,54 @@ export default class ConnectionService extends Service{
 
 					},
 				},
+				// connect brokers
+				connections: {
+					rest: {
+						method: "POST",
+						path: "/connections",
+					},
 
+					params: {
+						email: { type: "string" },
+						// leave here incase dit --
+						filter_by_name: { type: "string", optional: true, },
+					},
+					async handler(ctx) {
+						let connections = [];
+						var  following = [];
+
+						const agentFound = await this.adapter.find();
+						const agentFoundOne = await this.adapter.findOne({
+							email: ctx.params.email
+						});
+
+						if(agentFoundOne){
+							for(var invitesIndex in agentFoundOne.invites){
+								if (agentFoundOne.invites[invitesIndex].invited == true){
+									following.push(agentFoundOne.invites[invitesIndex].email);
+								}
+							}
+							const str2 = "";
+							for(var dataIndex in agentFound){
+								if(agentFound[dataIndex].email != ctx.params.email && agentFound[dataIndex].position == "Broker"){
+									if(following.includes(agentFound[dataIndex].email) != true){
+										connections.push({
+											_id: agentFound[dataIndex]._id,
+											// firstname: agentFound[dataIndex].firstname,
+											// lastname: agentFound[dataIndex].lastname,
+
+											displayName: agentFound[dataIndex].firstname.charAt(0).toUpperCase() +  agentFound[dataIndex].firstname.slice(1)+ ' ' +agentFound[dataIndex].lastname.charAt(0).toUpperCase() +  agentFound[dataIndex].lastname.slice(1),
+											photo_url: agentFound[dataIndex].photo_url ?? null,
+											about_me: agentFound[dataIndex].about_me ?? null
+										});
+									}
+								}
+							}
+							return { "success": true, connectBrokers: connections, "status": "Success"};
+						}
+						return { success: false, error_type: "not_found", status: "Fail" };
+					},
+				},
                 /**
 				 * read my connection that I already invited/approved.
 				 *
@@ -356,15 +403,15 @@ export default class ConnectionService extends Service{
                                 let invites = userFound.invites.filter(function(invite: any) {
                                     return invite.invited === invited &&  ( invite.email != userFound.email );
                                 });
-    
+
                                 // get agent other info
                                 for (var val of invites) {
                                     const email = val.email;
-    
+
                                     const agentFound = await this.adapter.findOne({
                                         email: email
                                     });
-    
+
                                     if ( agentFound ) {
                                         finalUserInvites.push(agentFound.firstname+ ' ' +agentFound.lastname);
                                     }
