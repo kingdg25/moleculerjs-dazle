@@ -99,7 +99,7 @@ export default class UsersService extends Service{
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
                 },
-                
+
 			},
 			hooks: {
 				before: {
@@ -127,7 +127,7 @@ export default class UsersService extends Service{
 				 */
 
                 // --- ADDITIONAL ACTIONS ---
-                
+
                 // JWT token generator
 
                 getUsersFromListOfIds: { // get users from ids
@@ -148,7 +148,7 @@ export default class UsersService extends Service{
                         });
                         users_profiles = await this.transformDocuments(ctx, ctx.params, users_profiles)
                         console.log(users_profiles)
-                        
+
 
                         return users_profiles;
                     }
@@ -202,7 +202,7 @@ export default class UsersService extends Service{
                     async handler(ctx) {
                         const entity = ctx.params.user;
                         await this.validateEntity(entity);
-        
+
                         const found = await this.adapter.findOne({
                             email: entity.email,
                         });
@@ -236,7 +236,7 @@ export default class UsersService extends Service{
                                     }
                                 );
                             }
-                        
+
                         }
                         else if ( entity.position == "Broker" ) {
                             // check broker license number
@@ -314,12 +314,12 @@ export default class UsersService extends Service{
                         broker.call("email_verification.createAndSendEmailVerification", { email: json.email, user_id: json._id }).catch(e => {console.log("err in creating email_verification"); console.log(e)})
 
                         json.token = await broker.call("users.generateJWToken", {user_object: json});
-                        
+
                         return { success: true, user: json, status: "Registration Success" };
-                        
+
                     }
                 },
-        
+
                 /**
                  * Login a user
                  *
@@ -336,7 +336,7 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const auth = ctx.params.user;
-        
+
                         const found = await this.adapter.findOne({
                             email: auth.email,
                         });
@@ -370,7 +370,7 @@ export default class UsersService extends Service{
                         return { success: false, error_type: "not_found", user: auth, status: "Please enter a valid username/password to sign in" };
                     }
                 },
-        
+
                 /**
                  * Forgot password
                  *
@@ -387,7 +387,7 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const entity = ctx.params.user;
-        
+
                         if (entity.email) {
                             const found = await this.adapter.findOne({
                                 email: entity.email,
@@ -397,7 +397,7 @@ export default class UsersService extends Service{
 
                                 if (found.login_type == 'email&pass'){
                                     const genCode = Math.random().toString(36).substr(2, 4);
-            
+
                                     this.send({
                                         to: entity.email,
                                         subject: "Verification Code",
@@ -405,18 +405,18 @@ export default class UsersService extends Service{
                                             genCode +
                                             "</b>.",
                                     });
-            
+
                                     const doc = await this.adapter.updateById(
-                                        found._id, 
+                                        found._id,
                                         { $set: { code: genCode } }
                                     );
                                     const json = await this.transformDocuments(ctx, ctx.params, doc);
                                     await this.entityChanged("updated", json, ctx);
-                                    
+
                                     json.code = genCode;
-            
+
                                     return { success: true, user: json, status: "Success" };
-                                
+
                                 }
                             }
                         }
@@ -424,7 +424,7 @@ export default class UsersService extends Service{
                         return { success: false, error_type: "not_found", status: "Sorry we can't find an account with this email address" };
                     }
                 },
-        
+
                 /**
                  * Reset password
                  *
@@ -441,7 +441,7 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const entity = ctx.params.user;
-        
+
                         if (entity.email) {
                             const found = await this.adapter.findOne({
                                 email: entity.email,
@@ -460,18 +460,18 @@ export default class UsersService extends Service{
                                         },
                                     }
                                 );
-        
+
                                 const json = await this.transformDocuments(ctx, ctx.params, doc);
                                 await this.entityChanged("updated", json, ctx);
-        
+
                                 return { user: json, success: true, status: "Success" };
                             }
                         }
-                        
+
                         return { success: false, error_type: "not_found", status: "Sorry we can't find an account with this email address" };
                     }
                 },
-        
+
                 /**
                  * Social login
                  *
@@ -488,11 +488,11 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const entity = ctx.params.user;
-        
+
                         const found = await this.adapter.findOne({
                             email: entity.email,
                         });
-        
+
                         if (found) {
                             // check user required fields on social logins
                             if( found.mobile_number && found.position && found.broker_license_number ) {
@@ -505,46 +505,46 @@ export default class UsersService extends Service{
                                         }
                                     }
                                 });
-                        
+
                                 // if ( foundInvited ) {
                                     const json = await this.transformDocuments(ctx, ctx.params, found);
                                     await this.entityChanged("updated", json, ctx);
                                     json.token = await broker.call("users.generateJWToken", {user_object: json});
-                        
+
                                     return { success: true, user: json, status: "Social login Success" };
                                 // }
-                        
+
                                 // return { success: false, error_type: "pending", user: found, status: "Your account status is currently pending" };
                             }
-                        
+
                             return { success: false, error_type: "no_setup_profile", user: found, status: `${found.login_type} login fail` };
                         }
                         else{
                             if (entity.login_type === "gmail") {
                                 console.log('google credentials', process.env.GOOGLE_ID, process.env.GOOGLE_SECRET);
                                 console.log(entity.token);
-        
+
                                 const ticket = await client.verifyIdToken({
                                     idToken: entity.token,
                                     // audience: process.env.GOOGLE_ID,
                                 });
-                                
+
                                 console.log('ticket ticker', ticket);
-        
+
                                 if (ticket) {
                                     const { given_name, family_name, email } = ticket.getPayload();
-        
+
                                     entity.firstname = given_name;
                                     entity.lastname = family_name;
                                     entity.is_new_user = true;
-        
+
                                     const doc = await this.adapter.insert(entity);
                                     const json = await this.transformDocuments(ctx, ctx.params, doc);
                                     await this.entityChanged("created", json, ctx);
                                     json.token = await broker.call("users.generateJWToken", {user_object: json});
-        
+
                                     return { user: json, success: true, status: "Google login Success" };
-                                
+
                                 }
                                 else {
                                     return { success: false, error_type: "google_login_fail", status: "Google login fail" };
@@ -555,21 +555,21 @@ export default class UsersService extends Service{
 
                                 const resp = await this._client.get(`https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${entity.token}`);
                                 const data = JSON.parse(resp.body);
-        
+
                                 console.log('faceboook json data', data);
-        
+
                                 if (data != null) {
                                     entity.firstname = data['first_name'];
                                     entity.lastname = data['last_name'];
                                     entity.is_new_user = true;
-        
+
                                     const doc = await this.adapter.insert(entity);
                                     const json = await this.transformDocuments(ctx, ctx.params, doc);
                                     await this.entityChanged("created", json, ctx);
                                     json.token = await broker.call("users.generateJWToken", {user_object: json});
-        
+
                                     return { user: json, success: true, status: "facebook login Success" };
-                                
+
                                 }
                                 else {
                                     return { success: false, error_type: "facebook_login_fail", status: "Facebook login failed" };
@@ -598,7 +598,7 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const auth = ctx.params.user;
-        
+
                         const found = await this.adapter.findOne({
                             email: auth.email,
                         });
@@ -612,10 +612,10 @@ export default class UsersService extends Service{
                                     },
                                 }
                             );
-    
+
                             const json = await this.transformDocuments(ctx, ctx.params, doc);
                             await this.entityChanged("updated", json, ctx);
-    
+
                             return { success: true, user: json, status: "Success" };
                         }
 
@@ -639,7 +639,7 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const broker_license_number = ctx.params.broker_license_number;
-        
+
                         const found = await this.adapter.findOne({
                             position: 'Broker',
                             broker_license_number: broker_license_number,
@@ -711,7 +711,7 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const entity = ctx.params.user;
-        
+
                         const found = await this.adapter.findOne({
                             email: entity.email,
                         });
@@ -799,7 +799,7 @@ export default class UsersService extends Service{
                                 //     entity.invites = finalSalesperson; // add salesperson to the broker
                                 // }
                             }
-            
+
                             const doc = await this.adapter.updateById(
                                 found._id,
                                 {
@@ -809,7 +809,7 @@ export default class UsersService extends Service{
                             const json = await this.transformDocuments(ctx, ctx.params, doc);
                             await this.entityChanged("updated", json, ctx);
                             json.token = await broker.call("users.generateJWToken", {user_object: json});
-            
+
                             return { success: true, user: json, status: "Setup Profile Success" };
                         }
 
@@ -833,7 +833,7 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const entity = ctx.params.user;
-        
+
                         const found = await this.adapter.findOne({
                             _id: new ObjectID(entity._id)
                         });
@@ -852,7 +852,7 @@ export default class UsersService extends Service{
                             );
                             const json = await this.transformDocuments(ctx, ctx.params, doc);
                             await this.entityChanged("updated", json, ctx);
-            
+
                             return { success: true, user: json, status: "Update Success" };
                         }
 

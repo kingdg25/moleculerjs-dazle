@@ -148,7 +148,7 @@ export default class ConnectionService extends Service{
 					async handler(ctx) {
 						// console.log(ctx);
 						// const isAuthenticated: any = await broker.call("users.isAuthenticated", { token: ctx.params.user_token});
-						
+
 						// if ('success' in isAuthenticated) {
 						// 	if (!isAuthenticated.success) this.authenticationError();
 						// } else {this.authenticationError()}
@@ -157,11 +157,11 @@ export default class ConnectionService extends Service{
 						console.log(ctx.params.property);
 						const property = ctx.params.property;
 						await this.validateEntity(property);
-						
+
 						const doc = await this.adapter.insert(property);
                         const json = await this.transformDocuments(ctx, ctx.params, doc);
 						await this.entityChanged("created", json, ctx);
-						
+
 						console.log(json);
 
 						return { success: true, status: "Listing Created", property: json };
@@ -178,7 +178,7 @@ export default class ConnectionService extends Service{
 					async handler(ctx) {
 						const listings = [];
 						const uid = ctx.params.user_id
-						
+
 						// get user
 						await broker.call("users.get", { id: (uid)})
 
@@ -189,7 +189,7 @@ export default class ConnectionService extends Service{
 							},
 							sort: { createdAt: -1 },
 						});
-						
+
 						return { success: true, status: "Got My Listings", listings: my_listings };
                     }
                 },
@@ -227,7 +227,7 @@ export default class ConnectionService extends Service{
 								});
 							}
 						}
-						
+
 						return { success: true, status: "Listings Fetch", listings: listings, length: listings.length };
                     }
 				},
@@ -245,7 +245,7 @@ export default class ConnectionService extends Service{
 						const listing_id = ctx.params.id; // listing id
 						const data = ctx.params.data;
 						const current_user = ctx.meta.user;
-						
+
                         const listing = await this.adapter.findOne({
                             _id: new ObjectID(listing_id)
 						});
@@ -287,7 +287,7 @@ export default class ConnectionService extends Service{
 								const json = await this.transformDocuments(ctx, ctx.params, doc);
 								return {success: true, deletedListing: doc, status: "Listing deleted."}
 								} else return { success: false, error_type: "delete_error", status: "An error occured while trying to delete the listing." };
-								
+
 							}
 							else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to delete this listing." };
 						} else return { success: false, error_type: "not_found", status: "It seems the listing is not available." };
