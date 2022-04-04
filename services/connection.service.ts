@@ -150,17 +150,13 @@ export default class ConnectionService extends Service{
 									following.push(agentFoundOne.invites[invitesIndex].email);
 								}
 							}
-							const str2 = "";
 							for(var dataIndex in agentFound){
 								if(agentFound[dataIndex].email != ctx.params.email && agentFound[dataIndex].position == "Broker"){
 									if(following.includes(agentFound[dataIndex].email) != true){
 										connections.push({
 											_id: agentFound[dataIndex]._id,
-											// firstname: agentFound[dataIndex].firstname,
-											// lastname: agentFound[dataIndex].lastname,
-
 											displayName: agentFound[dataIndex].firstname.charAt(0).toUpperCase() +  agentFound[dataIndex].firstname.slice(1)+ ' ' +agentFound[dataIndex].lastname.charAt(0).toUpperCase() +  agentFound[dataIndex].lastname.slice(1),
-											photo_url: agentFound[dataIndex].photo_url ?? null,
+											photo_url: agentFound[dataIndex].profile_picture ?? null,
 											about_me: agentFound[dataIndex].about_me ?? null
 										});
 									}
