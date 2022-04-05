@@ -78,11 +78,14 @@ export default class EmailVerificationService extends Service{
 						const email_verification = ctx.params.email_verification;
 						const email = email_verification.email;
 						const token = email_verification.token;
+						let html:any = await fs.readFile(`${process.cwd()}/templates/email/email_content.html`, 'utf8');
+						let final_html = html.replace("{Domain}", process.env.DOMAIN_NAME).replace("{email-add}", email).replace("{token}", token);
 												
 						return await broker.call("notify.notifyToEmail", {
 							email: email,
 							subject: "Dazle Email Verification",
-							content: `Hello there! Just click the link below to verify your email <hr><hr> <a href="${process.env.DOMAIN_NAME}/email-verify/${email}/${token}">Click Here</a> `
+							content: final_html
+							// content: `Hello there! Just click the link below to verify your email <hr><hr> <a href="${process.env.DOMAIN_NAME}/email-verify/${email}/${token}">Click Here</a> `
 						});
 					}
 				},
