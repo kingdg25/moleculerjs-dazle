@@ -83,6 +83,7 @@ export default class ConnectionService extends Service{
 					description: { type: "string", optional: true, default: () => "" },
 					createdBy: { type: "string" }, // user id
 					view_type: { type: "string", optional: false, default: "public" }, //public or private
+					coordinates: { type: "object", optional: true, default: () =>  {} },
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
 				  }
