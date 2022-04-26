@@ -126,7 +126,7 @@ export default class ConnectionService extends Service{
                             _id: new ObjectID(id)
 						});
 						if (doc) {
-							if (doc.createdBy==current_user._id || doc.view_type=="pubic") {
+							if (doc.createdBy==current_user._id || doc.view_type=="public") {
 								const json = await this.transformDocuments(ctx, ctx.params, doc);
 								return {success: true, listing: doc, status: "Listing fetched."}
 							}
