@@ -1,12 +1,13 @@
 "use strict";
 import {Context, Service, ServiceBroker, ServiceSchema} from "moleculer";
 const { MoleculerError } = require("moleculer").Errors;
-
+const selectPhilippinesAddress = require("select-philippines-address"); 
 import { formatDistanceToNow } from "date-fns";
 import DbConnection from "../mixins/db.mixin";
 
 
 const ObjectID = require("mongodb").ObjectID;
+
 
 
 export default class ConnectionService extends Service{
@@ -71,19 +72,25 @@ export default class ConnectionService extends Service{
                     },
 					price: { type: "number", convert: true, positive: true, default: 0.0 },
 					time_period: { type: "string", optional: true, default: () => "" }, // yearly or monthly
-					number_of_bedrooms: { type: "string" },
+					number_of_bedrooms: {type: "number", convert: true,  optional: true, default: 0  },
 					// number_of_bathrooms: { type: "string", convert: true, integer: true, default: () => 0 },
-					number_of_bathrooms: { type: "string" },
+					number_of_bathrooms: { type: "number", convert: true,  optional: true, default: 0  },
 					number_of_parking_space: { type: "string" },
 					total_area: { type: "number", convert: true, positive: true, default: 0.0 },
-					is_your_property: { type: "string" },  // is the property furnished ? or not ?
+					is_your_property: { type: "string", optional: true, default: () => ""  },  // is the property furnished ? or not ?
 					district: { type: "string", optional: true },
 					city: { type: "string" },
 					landmark: { type: "string", optional: true },
+					title: { type: "string", optional: true, default: () => "" },
 					description: { type: "string", optional: true, default: () => "" },
 					createdBy: { type: "string" }, // user id
 					view_type: { type: "string", optional: false, default: "public" }, //public or private
 					coordinates: { type: "object", optional: true, default: () =>  {} },
+					location: { type: "object", optional: true, default: () =>  {} },
+					pricing : { type: "string", optional: true, default: () => ""  },
+					frontage_area: { type: "number", convert: true, positive: true, optional: true, default: 0.0 },
+					floor_area: { type: "number", convert: true, positive: true, optional: true, default: 0.0 },
+					ownership: { type: "string", optional: true, default: () => ""  },
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
 				  }
@@ -135,6 +142,64 @@ export default class ConnectionService extends Service{
 							// }
 							else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to view this listing." };
 						} else return { success: false, error_type: "not_found", status: "It seems the listing is not available." };
+					}
+				},
+				getRegions: {
+					rest: {
+                        method: "GET",
+                        path: "/regions"
+                    },
+					async handler(){
+						var regions = await selectPhilippinesAddress.regions();
+						// var regions;
+						// selectPhilippinesAddress.regions().then((region: any) => regions = region);
+						console.log(regions);
+						return { success: true, status: "Got My Regions", regions: regions };
+					}
+				},
+				getProvinces: {
+					rest: {
+                        method: "GET",
+                        path: "/provinces"
+                    },
+					params: {
+						region_id: {type: "string"}
+					},
+					async handler(ctx){
+						var provinces = await selectPhilippinesAddress.provinces(ctx.params.region_id);
+						
+						console.log(provinces);
+						return { success: true, status: "Got My Provinces", provinces: provinces };
+					}
+				},
+				getCities: {
+					rest: {
+                        method: "GET",
+                        path: "/cities"
+                    },
+					params: {
+						province_id: {type: "string"}
+					},
+					async handler(ctx){
+						var cities = await selectPhilippinesAddress.cities(ctx.params.province_id);
+						
+						console.log(cities);
+						return { success: true, status: "Got My Cities", cities: cities };
+					}
+				},
+				getBarangays: {
+					rest: {
+                        method: "GET",
+                        path: "/barangays"
+                    },
+					params: {
+						city_id: {type: "string"}
+					},
+					async handler(ctx){
+						var barangays = await selectPhilippinesAddress.barangays(ctx.params.city_id);
+						
+						console.log(barangays);
+						return { success: true, status: "Got My Cities", barangays: barangays };
 					}
 				},
                 createListing: {
