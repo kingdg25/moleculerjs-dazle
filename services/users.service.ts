@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 import { OAuth2Client } from "google-auth-library";
 import HTTPClientService from "moleculer-http-client";
 import DbConnection from "../mixins/db.mixin";
+import { promises as fs } from 'fs';
 
 const { MoleculerError } = require("moleculer").Errors;
 
@@ -314,6 +315,18 @@ export default class UsersService extends Service{
                         broker.call("email_verification.createAndSendEmailVerification", { email: json.email, user_id: json._id }).catch(e => {console.log("err in creating email_verification"); console.log(e)})
 
                         json.token = await broker.call("users.generateJWToken", {user_object: json});
+                        
+                        //welcom email here
+                        let html:any = await fs.readFile(`${process.cwd()}/templates/email/welcome_email.html`, 'utf8');
+                            let final_html = html.replace("{user_firstname}",entity.firstname);
+                                        
+                            await broker.call("notify.notifyToEmail", {
+                                email:entity.email,
+                                subject: "Dazle Welcome Email",
+                                content: final_html
+                                // content: `Hello there! Just click the link below to verify your email <hr><hr> <a href="${process.env.DOMAIN_NAME}/email-verify/${email}/${token}">Click Here</a> `
+                            });
+
 
                         return { success: true, user: json, status: "Registration Success" };
 
@@ -537,6 +550,8 @@ export default class UsersService extends Service{
                                     entity.firstname = given_name;
                                     entity.lastname = family_name;
                                     entity.is_new_user = true;
+                                    entity.email_verified = true;
+
 
                                     const doc = await this.adapter.insert(entity);
                                     const json = await this.transformDocuments(ctx, ctx.params, doc);
@@ -562,6 +577,7 @@ export default class UsersService extends Service{
                                     entity.firstname = data['first_name'];
                                     entity.lastname = data['last_name'];
                                     entity.is_new_user = true;
+                                    entity.email_verified = true;
 
                                     const doc = await this.adapter.insert(entity);
                                     const json = await this.transformDocuments(ctx, ctx.params, doc);
@@ -809,7 +825,16 @@ export default class UsersService extends Service{
                             const json = await this.transformDocuments(ctx, ctx.params, doc);
                             await this.entityChanged("updated", json, ctx);
                             json.token = await broker.call("users.generateJWToken", {user_object: json});
-
+                           
+                            let html:any = await fs.readFile(`${process.cwd()}/templates/email/welcome_email.html`, 'utf8');
+                            let final_html = html.replace("{user_firstname}",entity.firstname);
+                                        
+                            await broker.call("notify.notifyToEmail", {
+                                email:entity.email,
+                                subject: "Dazle Welcome Email",
+                                content: final_html
+                                // content: `Hello there! Just click the link below to verify your email <hr><hr> <a href="${process.env.DOMAIN_NAME}/email-verify/${email}/${token}">Click Here</a> `
+                            });
                             return { success: true, user: json, status: "Setup Profile Success" };
                         }
 
