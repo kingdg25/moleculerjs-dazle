@@ -878,11 +878,14 @@ export default class UsersService extends Service{
                                     position: "Broker"
                                 });
                                 if (brokerLicenseNumberFound) {
-                                    return {
-                                        success: false,
-                                        error_type: "broker_exist",
-                                        status: "Broker already exist",
-                                    };
+                                    if(brokerLicenseNumberFound._id != entity._id){
+                                        return {
+                                            success: false,
+                                            error_type: "broker_exist",
+                                            status: "Broker already exist",
+                                        };
+                                    }
+                                    
                                 }
                             }
 
