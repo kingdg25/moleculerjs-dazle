@@ -67,7 +67,7 @@ export default class UsersService extends Service{
                     lastname: { type: "string" },
                     mobile_number: { type: "string" },
                     position: { type: "enum", values: ["Broker", "Salesperson"] },
-                    broker_license_number: { type: "string" },
+                    broker_license_number: { type: "string", optional: true },
                     email: { type: "email" },
                     password: {
                         type: "string",
@@ -93,7 +93,7 @@ export default class UsersService extends Service{
                             }
                         },
                     },
-                    email_verified: { type: "boolean", default: false },
+                    email_verified: { type: "boolean", default: true },
                     verified: { type: "boolean", default: false },
                     profile_picture: { type: "string", optional: true},
                     about_me: { type: "string", optional: true},
@@ -312,7 +312,7 @@ export default class UsersService extends Service{
                         const doc = await this.adapter.insert(entity);
                         const json = await this.transformDocuments(ctx, ctx.params, doc);
                         await this.entityChanged("created", json, ctx);
-                        broker.call("email_verification.createAndSendEmailVerification", { email: json.email, user_id: json._id }).catch(e => {console.log("err in creating email_verification"); console.log(e)})
+                        // broker.call("email_verification.createAndSendEmailVerification", { email: json.email, user_id: json._id }).catch(e => {console.log("err in creating email_verification"); console.log(e)})
 
                         json.token = await broker.call("users.generateJWToken", {user_object: json});
                         
@@ -863,6 +863,29 @@ export default class UsersService extends Service{
                             _id: new ObjectID(entity._id)
                         });
                         if (found) {
+                            if ( entity.position == "Salesperson" ) {
+                                // check salesperson broker
+                                const brokerFound = await this.adapter.findOne({
+                                    broker_license_number: entity.broker_license_number,
+                                    position: "Broker"
+                                });
+                                
+                            }
+                            else if ( entity.position == "Broker" ) {
+                                // check broker license number
+                                const brokerLicenseNumberFound = await this.adapter.findOne({
+                                    broker_license_number: entity.broker_license_number,
+                                    position: "Broker"
+                                });
+                                if (brokerLicenseNumberFound) {
+                                    return {
+                                        success: false,
+                                        error_type: "broker_exist",
+                                        status: "Broker already exist",
+                                    };
+                                }
+                            }
+
                             const doc = await this.adapter.updateById(
                                 found._id,
                                 {
@@ -871,7 +894,9 @@ export default class UsersService extends Service{
                                         lastname: entity.lastname,
                                         mobile_number: entity.mobile_number,
                                         about_me: entity.about_me,
-                                        profile_picture: entity.profile_picture
+                                        profile_picture: entity.profile_picture,
+                                        broker_license_number: entity.broker_license_number
+                                    
                                     }
                                 }
                             );
