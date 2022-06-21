@@ -514,7 +514,7 @@ export default class UsersService extends Service{
 
                         if (found) {
                             // check user required fields on social logins
-                            if( found.mobile_number && found.position && found.broker_license_number ) {
+                            if( found.mobile_number && found.position) {
                                 // check if user is invited
                                 const foundInvited = await this.adapter.findOne({
                                     invites: {
