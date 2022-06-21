@@ -180,6 +180,7 @@ export default class UsersService extends Service{
                             return verified_user;
                         } catch (error) {
                             console.log("NAG ERR")
+                            console.log(error)
                             return;
                         }
                     }
