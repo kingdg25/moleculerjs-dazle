@@ -241,17 +241,22 @@ export default class UsersService extends Service{
                         }
                         else if ( entity.position == "Broker" ) {
                             // check broker license number
-                            const brokerLicenseNumberFound = await this.adapter.findOne({
-                                broker_license_number: entity.broker_license_number,
-                                position: "Broker" // TODO: add condition email_verified
-                            });
-                            if (brokerLicenseNumberFound) {
-                                return {
-                                    success: false,
-                                    error_type: "broker_exist",
-                                    status: "Broker already exist",
-                                };
-                            }
+                            // const brokerLicenseNumberFound = await this.adapter.findOne({
+                            //     broker_license_number: entity.broker_license_number,
+                            //     position: "Broker" // TODO: add condition email_verified
+                            // });
+                            // if (brokerLicenseNumberFound) {
+                            //     console.log('INSIDE REGISTER');
+                            //     if(brokerLicenseNumberFound._id != entity._id){
+                            //         console.log('BROKER FOUND');
+                            //         console.log('LICENSE NUMBER:' + brokerLicenseNumberFound.broker_license_number);
+                            //         return {
+                            //             success: false,
+                            //             error_type: "broker_exist",
+                            //             status: "Broker already exist",
+                            //         };
+                            //     }
+                            // }
 
 
                             // check admin
@@ -757,17 +762,19 @@ export default class UsersService extends Service{
                             }
                             else if ( entity.position == "Broker" ) {
                                 // check broker license number
-                                const brokerLicenseNumberFound = await this.adapter.findOne({
-                                    broker_license_number: entity.broker_license_number,
-                                    position: "Broker"
-                                });
-                                if (brokerLicenseNumberFound) {
-                                    return {
-                                        success: false,
-                                        error_type: "broker_exist",
-                                        status: "Broker already exist",
-                                    };
-                                }
+                                // const brokerLicenseNumberFound = await this.adapter.findOne({
+                                //     broker_license_number: entity.broker_license_number,
+                                //     position: "Broker"
+                                // });
+                                // if (brokerLicenseNumberFound) {
+                                //     if(brokerLicenseNumberFound._id != entity._id){
+                                //         return {
+                                //             success: false,
+                                //             error_type: "broker_exist",
+                                //             status: "Broker already exist",
+                                //         };
+                                //     }
+                                // }
 
 
                                 // // check admin
