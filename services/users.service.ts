@@ -14,6 +14,7 @@ const { MoleculerError } = require("moleculer").Errors;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MailService = require("moleculer-mail");
+const verifyAppleIdToken = require("verify-apple-id-token").default;
 
 dotenv.config();
 const client = new OAuth2Client(process.env.GOOGLE_ID, process.env.GOOGLE_SECRET);
@@ -595,6 +596,35 @@ export default class UsersService extends Service{
                                 }
                                 else {
                                     return { success: false, error_type: "facebook_login_fail", status: "Facebook login failed" };
+                                }
+                            } else if (entity.login_type === "apple") {
+                                try {
+                                    const resp = await verifyAppleIdToken({
+                                        idToken: 'eyJraWQiOiJZdXlYb1kiLCJhbGciOiJ SUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLmJyb29reS5kYXpsZSIsImV4cCI6MTY1NjA0NzQxNywiaWF0IjoxNjU1OTYxMDE3LCJzdWIiOiIwMDAzNDkuZTEwMTNhMTA4MTEyNDU1ZWI3Nzg3NDIwN2FlNTQ5MzAuMTM0NiIsImNfaGFzaCI6IjV6c2NwZ21URW9pSmNNWkhlUnpyckEiLCJlbWFpbCI6ImtpbmdpZWRnQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjoidHJ1ZSIsImF1dGhfdGltZSI6MTY1NTk2MTAxNywibm9uY2Vfc3VwcG9ydGVkIjp0cnVlfQ.L7uXAFupiXWbW30Ro6-Yy6Wxc75133HGCKAegDw3fEOllGFTcOEfe-nR31A-eVX50QEafdKmN5Lk5PtoYLRMF8I8MX1xhPU2oDoN9PkliKXfnDNcrugQpyUJPteL0ZmgRhvYZSpOuaVnIb-VuvQYZ1OMpyUQletmyjrxhfLGAuo2HtUNvtRZVAc5_QzxVclSu1vpbRjIMT0RoBXo_qRiRQesKoUxd82_B4SGKSySLSTxDphdw4Q90pHTqkunFi42Sagote3i9UmN_hV0KPZTvYQ0lBQjVmJzw4qj633jIM9PaB9De2Dtl9YD6XcOWVEHOs-lZSvDMtlyE0mAuoCc0A',
+                                        // idToken: entity.token,
+                                        clientId: 'com.brooky.dazle'
+                                    });
+
+                                    console.log("resp")
+                                    console.log(resp)
+                                    const other_details = entity.otherDetails
+                                    if (resp) {
+                                        entity.firstname = other_details ? entity.otherDetails.firstName || "" : "";
+                                        entity.lastname = other_details ? entity.otherDetails.lastName || "" : "";
+                                        entity.is_new_user = true;
+                                        entity.email_verified = true;
+    
+                                        const doc = await this.adapter.insert(entity);
+                                        const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                        await this.entityChanged("created", json, ctx);
+                                        json.token = await broker.call("users.generateJWToken", {user_object: json});
+    
+                                        return { user: json, success: true, status: "Apple login Success" };
+    
+                                    }
+                                } catch (error) {
+                                    console.log(error)
+                                    return { success: false, error_type: "apple_login_fail", status: "Apple login failed"};
                                 }
                             }
                             else {
