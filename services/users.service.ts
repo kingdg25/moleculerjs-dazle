@@ -600,8 +600,8 @@ export default class UsersService extends Service{
                             } else if (entity.login_type === "apple") {
                                 try {
                                     const resp = await verifyAppleIdToken({
-                                        idToken: 'eyJraWQiOiJZdXlYb1kiLCJhbGciOiJ SUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLmJyb29reS5kYXpsZSIsImV4cCI6MTY1NjA0NzQxNywiaWF0IjoxNjU1OTYxMDE3LCJzdWIiOiIwMDAzNDkuZTEwMTNhMTA4MTEyNDU1ZWI3Nzg3NDIwN2FlNTQ5MzAuMTM0NiIsImNfaGFzaCI6IjV6c2NwZ21URW9pSmNNWkhlUnpyckEiLCJlbWFpbCI6ImtpbmdpZWRnQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjoidHJ1ZSIsImF1dGhfdGltZSI6MTY1NTk2MTAxNywibm9uY2Vfc3VwcG9ydGVkIjp0cnVlfQ.L7uXAFupiXWbW30Ro6-Yy6Wxc75133HGCKAegDw3fEOllGFTcOEfe-nR31A-eVX50QEafdKmN5Lk5PtoYLRMF8I8MX1xhPU2oDoN9PkliKXfnDNcrugQpyUJPteL0ZmgRhvYZSpOuaVnIb-VuvQYZ1OMpyUQletmyjrxhfLGAuo2HtUNvtRZVAc5_QzxVclSu1vpbRjIMT0RoBXo_qRiRQesKoUxd82_B4SGKSySLSTxDphdw4Q90pHTqkunFi42Sagote3i9UmN_hV0KPZTvYQ0lBQjVmJzw4qj633jIM9PaB9De2Dtl9YD6XcOWVEHOs-lZSvDMtlyE0mAuoCc0A',
-                                        // idToken: entity.token,
+                                        // idToken: 'eyJraWQiOiJZdXlYb1kiLCJhbGciOiJ SUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLmJyb29reS5kYXpsZSIsImV4cCI6MTY1NjA0NzQxNywiaWF0IjoxNjU1OTYxMDE3LCJzdWIiOiIwMDAzNDkuZTEwMTNhMTA4MTEyNDU1ZWI3Nzg3NDIwN2FlNTQ5MzAuMTM0NiIsImNfaGFzaCI6IjV6c2NwZ21URW9pSmNNWkhlUnpyckEiLCJlbWFpbCI6ImtpbmdpZWRnQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjoidHJ1ZSIsImF1dGhfdGltZSI6MTY1NTk2MTAxNywibm9uY2Vfc3VwcG9ydGVkIjp0cnVlfQ.L7uXAFupiXWbW30Ro6-Yy6Wxc75133HGCKAegDw3fEOllGFTcOEfe-nR31A-eVX50QEafdKmN5Lk5PtoYLRMF8I8MX1xhPU2oDoN9PkliKXfnDNcrugQpyUJPteL0ZmgRhvYZSpOuaVnIb-VuvQYZ1OMpyUQletmyjrxhfLGAuo2HtUNvtRZVAc5_QzxVclSu1vpbRjIMT0RoBXo_qRiRQesKoUxd82_B4SGKSySLSTxDphdw4Q90pHTqkunFi42Sagote3i9UmN_hV0KPZTvYQ0lBQjVmJzw4qj633jIM9PaB9De2Dtl9YD6XcOWVEHOs-lZSvDMtlyE0mAuoCc0A',
+                                        idToken: entity.token,
                                         clientId: 'com.brooky.dazle'
                                     });
 
