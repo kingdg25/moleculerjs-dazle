@@ -509,6 +509,10 @@ export default class UsersService extends Service{
                     async handler(ctx) {
                         const entity = ctx.params.user;
 
+                        if (!entity.email) {
+                            return { success: false, error_type: "missing_data", status: "No email found." };
+                        }
+
                         const found = await this.adapter.findOne({
                             email: entity.email,
                         });
