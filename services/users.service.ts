@@ -508,6 +508,8 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const entity = ctx.params.user;
+                        console.log("ENENENEITITITT")
+                        console.log(entity)
 
                         if (!entity.email) {
                             return { success: false, error_type: "missing_data", status: "No email found." };
