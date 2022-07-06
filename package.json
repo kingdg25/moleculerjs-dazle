@@ -43,6 +43,7 @@
     "@types/jest": "^25.1.4",
     "@types/mkdirp": "^1.0.0",
     "@types/node": "^13.9.8",
+    "apple-signin-auth": "^1.7.4",
     "aws-sdk": "^2.1057.0",
     "bcrypt": "^5.0.1",
     "date-fns": "^2.27.0",

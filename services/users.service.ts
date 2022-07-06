@@ -9,6 +9,7 @@ import { OAuth2Client } from "google-auth-library";
 import HTTPClientService from "moleculer-http-client";
 import DbConnection from "../mixins/db.mixin";
 import { promises as fs } from 'fs';
+import appleSignin from 'apple-signin-auth';
 
 const { MoleculerError } = require("moleculer").Errors;
 
@@ -508,12 +509,14 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const entity = ctx.params.user;
+                        console.log("ENENENEITITITT")
+                        console.log(entity)
 
-                        if (!entity.email) {
+                        if (!entity.email && entity.login_type !== "apple") {
                             return { success: false, error_type: "missing_data", status: "No email found." };
                         }
 
-                        const found = await this.adapter.findOne({
+                        let found = await this.adapter.findOne({
                             email: entity.email,
                         });
 
@@ -602,33 +605,77 @@ export default class UsersService extends Service{
                                     return { success: false, error_type: "facebook_login_fail", status: "Facebook login failed" };
                                 }
                             } else if (entity.login_type === "apple") {
-                                try {
-                                    const resp = await verifyAppleIdToken({
-                                        // idToken: 'eyJraWQiOiJZdXlYb1kiLCJhbGciOiJ SUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLmJyb29reS5kYXpsZSIsImV4cCI6MTY1NjA0NzQxNywiaWF0IjoxNjU1OTYxMDE3LCJzdWIiOiIwMDAzNDkuZTEwMTNhMTA4MTEyNDU1ZWI3Nzg3NDIwN2FlNTQ5MzAuMTM0NiIsImNfaGFzaCI6IjV6c2NwZ21URW9pSmNNWkhlUnpyckEiLCJlbWFpbCI6ImtpbmdpZWRnQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjoidHJ1ZSIsImF1dGhfdGltZSI6MTY1NTk2MTAxNywibm9uY2Vfc3VwcG9ydGVkIjp0cnVlfQ.L7uXAFupiXWbW30Ro6-Yy6Wxc75133HGCKAegDw3fEOllGFTcOEfe-nR31A-eVX50QEafdKmN5Lk5PtoYLRMF8I8MX1xhPU2oDoN9PkliKXfnDNcrugQpyUJPteL0ZmgRhvYZSpOuaVnIb-VuvQYZ1OMpyUQletmyjrxhfLGAuo2HtUNvtRZVAc5_QzxVclSu1vpbRjIMT0RoBXo_qRiRQesKoUxd82_B4SGKSySLSTxDphdw4Q90pHTqkunFi42Sagote3i9UmN_hV0KPZTvYQ0lBQjVmJzw4qj633jIM9PaB9De2Dtl9YD6XcOWVEHOs-lZSvDMtlyE0mAuoCc0A',
-                                        idToken: entity.token,
-                                        clientId: 'com.brooky.dazle'
-                                    });
-
-                                    console.log("resp")
-                                    console.log(resp)
-                                    const other_details = entity.otherDetails
-                                    if (resp) {
-                                        entity.firstname = other_details ? entity.otherDetails.firstName || "" : "";
-                                        entity.lastname = other_details ? entity.otherDetails.lastName || "" : "";
-                                        entity.is_new_user = true;
-                                        entity.email_verified = true;
+                                const other_details = entity.otherDetails
+                                if (entity.token && other_details.authorizationCode) {
+                                    const authorizationCode = other_details.authorizationCode
     
-                                        const doc = await this.adapter.insert(entity);
-                                        const json = await this.transformDocuments(ctx, ctx.params, doc);
-                                        await this.entityChanged("created", json, ctx);
-                                        json.token = await broker.call("users.generateJWToken", {user_object: json});
+                                    try {
+                                        const tokenVerification:any = await verifyAppleIdToken({
+                                            // idToken: 'eyJraWQiOiJZdXlYb1kiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLmJyb29reS5kYXpsZSIsImV4cCI6MTY1NjA0NzQxNywiaWF0IjoxNjU1OTYxMDE3LCJzdWIiOiIwMDAzNDkuZTEwMTNhMTA4MTEyNDU1ZWI3Nzg3NDIwN2FlNTQ5MzAuMTM0NiIsImNfaGFzaCI6IjV6c2NwZ21URW9pSmNNWkhlUnpyckEiLCJlbWFpbCI6ImtpbmdpZWRnQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjoidHJ1ZSIsImF1dGhfdGltZSI6MTY1NTk2MTAxNywibm9uY2Vfc3VwcG9ydGVkIjp0cnVlfQ.L7uXAFupiXWbW30Ro6-Yy6Wxc75133HGCKAegDw3fEOllGFTcOEfe-nR31A-eVX50QEafdKmN5Lk5PtoYLRMF8I8MX1xhPU2oDoN9PkliKXfnDNcrugQpyUJPteL0ZmgRhvYZSpOuaVnIb-VuvQYZ1OMpyUQletmyjrxhfLGAuo2HtUNvtRZVAc5_QzxVclSu1vpbRjIMT0RoBXo_qRiRQesKoUxd82_B4SGKSySLSTxDphdw4Q90pHTqkunFi42Sagote3i9UmN_hV0KPZTvYQ0lBQjVmJzw4qj633jIM9PaB9De2Dtl9YD6XcOWVEHOs-lZSvDMtlyE0mAuoCc0A',
+                                            idToken: entity.token,
+                                            clientId: 'com.brooky.dazle'
+                                        });
+                                        console.log("tokenVerification")
+                                        console.log(tokenVerification)
     
-                                        return { user: json, success: true, status: "Apple login Success" };
+                                        if (!tokenVerification.email && !found) {
+                                            return { success: false, error_type: "apple_login_fail", status: "No email found during Apple Sign In."};
+                                        }
     
+                                        const clientSecret = appleSignin.getClientSecret({
+                                            clientID: process.env.APPLE_CLIENT_ID, // Apple Client ID
+                                            teamID: process.env.APPLE_TEAM_ID, // Apple Developer Team ID.
+                                            privateKey: process.env.APPLE_PRIVATE_KEY_STRING.replace(/\\n/g, '\n'), // private key associated with your client ID. -- Or provide a `privateKeyPath` property instead.
+                                            keyIdentifier: process.env.APPLE_PRIVATE_ID, // identifier of the private key.
+                                        });
+                                        
+                                        const options = {
+                                            clientID: process.env.APPLE_CLIENT_ID, // Apple Client ID
+                                            redirectUri: '', // use the same value which you passed to authorisation URL.
+                                            clientSecret: clientSecret
+                                        };
+    
+                                        const tokenResponse: any = await appleSignin.getAuthorizationToken(authorizationCode, options);
+                                        console.log("tokenResponse")
+                                        console.log(tokenResponse)
+                                        if ('error' in tokenResponse) {
+                                            return { success: false, error_type: "apple_login_fail", status: tokenResponse.error_description, info: tokenResponse};
+                                        }
+                                        
+                                        found = await this.adapter.findOne({
+                                            email: tokenVerification.email
+                                        });
+                                            
+                                        if (!found) {
+                                            console.log("NO USER FOUND CREATING ONE")
+                                            entity.firstname = other_details ? entity.otherDetails.firstName || "" : "";
+                                            entity.lastname = other_details ? entity.otherDetails.lastName || "" : "";
+                                            entity.is_new_user = true;
+                                            entity.email_verified = true;
+                                            entity.email = tokenVerification.email
+    
+                                            const doc = await this.adapter.insert(entity);
+                                            const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                            await this.entityChanged("created", json, ctx);
+                                            json.token = await broker.call("users.generateJWToken", {user_object: json});
+                                            json.access_token = tokenResponse.access_token
+                                            json.refresh_token = tokenResponse.refresh_token
+        
+                                            return { user: json, success: true, status: "Apple login Success" };
+                                        } else {
+                                            console.log("USER FOUND RETURNING USER INFO")
+                                            const json = await this.transformDocuments(ctx, ctx.params, found);
+                                            await this.entityChanged("updated", json, ctx);
+                                            json.token = await broker.call("users.generateJWToken", {user_object: json});
+                                            json.access_token = tokenResponse.access_token
+                                            json.refresh_token = tokenResponse.refresh_token
+                                            return { user: json, success: true, status: "Apple login Success" };
+                                        }
+                                    } catch (e) {
+                                        return { success: false, error_type: "apple_login_fail", status: "Apple login failed", info: e};
                                     }
-                                } catch (error) {
-                                    console.log(error)
-                                    return { success: false, error_type: "apple_login_fail", status: "Apple login failed"};
+                                } else {
+                                    return { success: false, error_type: "apple_login_fail", status: "No token ID or authorization code found."};
                                 }
                             }
                             else {
