@@ -555,12 +555,16 @@ export default class UsersService extends Service{
                                     idToken: entity.token,
                                     // audience: process.env.GOOGLE_ID,
                                 });
+                                
+                                const refresh_token = client.credentials.refresh_token
+                                const access_token = client.credentials.access_token
 
-                                console.log('ticket ticker', ticket);
+                                console.log(`refresh ${refresh_token} access ${access_token}`)
 
                                 if (ticket) {
                                     const { given_name, family_name, email } = ticket.getPayload();
 
+                                    entity.google = {id: ticket.getUserId()}
                                     entity.firstname = given_name;
                                     entity.lastname = family_name;
                                     entity.is_new_user = true;
@@ -592,6 +596,7 @@ export default class UsersService extends Service{
                                     entity.lastname = data['last_name'];
                                     entity.is_new_user = true;
                                     entity.email_verified = true;
+                                    entity.facebook = {id: data.id};
 
                                     const doc = await this.adapter.insert(entity);
                                     const json = await this.transformDocuments(ctx, ctx.params, doc);
@@ -648,11 +653,15 @@ export default class UsersService extends Service{
                                             
                                         if (!found) {
                                             console.log("NO USER FOUND CREATING ONE")
+
+                                            delete other_details.authorizationCode;
+
                                             entity.firstname = other_details ? entity.otherDetails.firstName || "" : "";
                                             entity.lastname = other_details ? entity.otherDetails.lastName || "" : "";
                                             entity.is_new_user = true;
                                             entity.email_verified = true;
                                             entity.email = tokenVerification.email
+                                            entity.apple = {id: tokenVerification.sub}
     
                                             const doc = await this.adapter.insert(entity);
                                             const json = await this.transformDocuments(ctx, ctx.params, doc);
