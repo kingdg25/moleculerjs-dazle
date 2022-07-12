@@ -438,6 +438,10 @@ export default class UsersService extends Service{
 
                                     return { success: true, user: json, status: "Success" };
 
+                                } else if(found.login_type == 'gmail'){
+                                    return { success: false, error_type: "not_found", status: "Sorry this email was registered using google sign in. Please log in using google sign in." };
+                                } else if(found.login_type == 'facebook'){
+                                    return { success: false, error_type: "not_found", status: "Sorry this email was registered using facebook sign in. Please log in using facebook sign in." };
                                 }
                             } else {
                                 return { success: false, error_type: "not_found", status: "Sorry we can't find an account with this email address" };
