@@ -439,10 +439,16 @@ export default class UsersService extends Service{
                                     return { success: true, user: json, status: "Success" };
 
                                 }
+                            } else {
+                                return { success: false, error_type: "not_found", status: "Sorry we can't find an account with this email address" };
                             }
+
+                        } else {
+                            console.log('Forgot Pass msg: Email is empty');
+                            return { success: false, error_type: "not_found", status: "EMAIL IS EMPTY" };
                         }
 
-                        return { success: false, error_type: "not_found", status: "Sorry we can't find an account with this email address" };
+                        
                     }
                 },
 
