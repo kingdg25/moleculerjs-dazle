@@ -59,7 +59,8 @@ export default class UsersService extends Service{
                     "is_new_user",
                     "email_verified",
                     "about_me",
-                    "profile_picture"
+                    "profile_picture",
+                    "account_status"
                 ],
 				logging: true,
 
@@ -99,6 +100,7 @@ export default class UsersService extends Service{
                     verified: { type: "boolean", default: false },
                     profile_picture: { type: "string", optional: true},
                     about_me: { type: "string", optional: true},
+                    account_status : {type: "string", optional: true},
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
                 },
@@ -1033,7 +1035,265 @@ export default class UsersService extends Service{
                         );
                         return await this.transformDocuments(ctx, ctx.params, updatedUser);
                     }
+                },
+                 /**
+                 * Forgot password
+                 *
+                 * @param {Object} user - User entity
+                 */
+                deleteAccountCode: {
+                    rest: {
+                        method: "POST",
+                        path: "/delete-account-code"
+                    },
+                    params: {
+                        user: { type: "object" },
+                    },
+                    /** @param {Context} ctx  */
+                    async handler(ctx) {
+                        const entity = ctx.params.user;
+
+                        if (entity.email) {
+                            const found = await this.adapter.findOne({
+                                email: entity.email,
+                            });
+
+                            if (found) {
+
+                                if (found.login_type != 'email&pass'){
+                                    const genCode = Math.random().toString(36).substr(2, 4);
+
+                                    this.send({
+                                        to: entity.email,
+                                        subject: "Delete/Deactivation account Verification Code",
+                                        html: "This is your verification code for deleting/deactivating your account <b>" +
+                                            genCode +
+                                            "</b>.",
+                                    });
+
+                                    const doc = await this.adapter.updateById(
+                                        found._id,
+                                        { $set: { code: genCode } }
+                                    );
+                                    const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                    await this.entityChanged("updated", json, ctx);
+
+                                    json.code = genCode;
+
+                                    return { success: true, user: json, status: "Success" };
+
+                                } 
+                            } else {
+                                return { success: false, error_type: "not_found", status: "Sorry we can't find an account with this email address" };
+                            }
+
+                        } else {
+                            console.log('Forgot Pass msg: Email is empty');
+                            return { success: false, error_type: "not_found", status: "EMAIL IS EMPTY" };
+                        }
+
+                        
+                    }
+                },
+                /**
+                 * check delete account code
+                 *
+                 * @param {Object} user - User entity
+                 */
+                 checkDeleteAccountCode: {
+                    rest: {
+                        method: "POST",
+                        path: "/check-delete-account-code"
+                    },
+                    params: {
+                        user: { type: "object" },
+                    },
+                    /** @param {Context} ctx  */
+                    async handler(ctx) {
+                        const entity = ctx.params.user;
+
+                        if (entity.email) {
+                            const found = await this.adapter.findOne({
+                                email: entity.email,
+                                code: entity.code,
+                            });
+
+                            if (found) {
+                                
+                                return { success: true, status: "Code Match" };
+                            } else {
+                                return {success: false, error_type: "Wrong code", status: "Code does not match."}
+                            }
+                        }
+
+                        return { success: false, error_type: "not_found", status: "Sorry we can't find an account with this email address" };
+                    }
+                },
+                 /**
+                 * Check password 
+                 *
+                 * @param {Object} user - User entity
+                 */
+                  verifyPassword: {
+                    rest: {
+                        method: "POST",
+                        path: "/verify-password"
+                    },
+                    params: {
+                        user: { type: "object" },
+                    },
+                    /** @param {Context} ctx  */
+                    async handler(ctx) {
+                        const auth = ctx.params.user;
+
+                        const found = await this.adapter.findOne({
+                            email: auth.email,
+                        });
+
+                        // check user
+                        if (found) {
+                            // check password
+                            if ( (await bcrypt.compare(auth.password, found.password)) ) {
+                              
+                                    return { success: true, status: "Verification success" };
+                              
+                            }
+                        }
+
+                        return { success: false, error_type: "not_found", user: auth, status: "Please enter a valid password to continue." };
+                    }
+                },
+                 /**
+                 * Deactivate Account
+                 *
+                 * @param {Object} user - User entity
+                 */
+                checkLoginType: {
+                    rest: {
+                        method: "PUT",
+                        path: "/check-login-type"
+                    },
+                    params: {
+                        user: { type: "object" },
+                    },
+					async handler(ctx) {
+						const entity = ctx.params.user;
+                        var login_type;
+
+                        if (entity.email) {
+                            const found = await this.adapter.findOne({
+                                email: entity.email,
+                            });
+
+                            if (found) {
+                                login_type = found.login_type;
+                                return { success: true, status: "Got User login type", login_type: login_type };
+                            }
+
+                        } 
+
+						return { success: false, error_type: "not_found", status: "Sorry we can't find an account with this email address" };
+                    }
+                },
+                 /**
+                 * Deactivate Account
+                 *
+                 * @param {Object} user - User entity
+                 */
+                  deactivateActivateAccount: {
+                    rest: {
+                        method: "PUT",
+                        path: "/deactivate-activate-account"
+                    },
+                    params: {
+                        user: { type: "object" },
+                    },
+                    /** @param {Context} ctx  */
+                    async handler(ctx) {
+                        const entity = ctx.params.user;
+
+                        if (entity.email) {
+                            const found = await this.adapter.findOne({
+                                email: entity.email,
+                            });
+
+                            if (found) {
+                                if(found.account_status == null || found.account_status == 'Active'){
+                                    const doc = await this.adapter.updateById(
+                                        found._id,
+                                        {
+                                            $set: {
+                                                account_status: 'Deactivated',
+                                            },
+                                        }
+                                    );
+                                    const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                    await this.entityChanged("updated", json, ctx);
+
+                                return { success: true, user: json, status: "Account deactivation sucess." };
+                                } else {
+                                    const doc = await this.adapter.updateById(
+                                        found._id,
+                                        {
+                                            $set: {
+                                                account_status: 'Active',
+                                            },
+                                        }
+                                    );
+                                    const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                    await this.entityChanged("updated", json, ctx);
+
+                                    return { success: true, user: json, status: "Account deactivation sucess." };
+                                }
+                            }
+                        }
+
+                        return { success: false, error_type: "not_found", status: "Sorry we can't find an account with this email address" };
+                    }
+                },
+                 /**
+                 * Delete Account
+                 *
+                 * @param {Object} user - User entity
+                 */
+                  deleteAccount: {
+                    rest: {
+                        method: "DELETE",
+                        path: "/delete-account/:id"
+                    },
+                    params: {
+						id: "string"
+					},
+                    /** @param {Context} ctx  */
+                    async handler(ctx) {
+                        const id = ctx.params.id;
+						const current_user = ctx.meta.user;
+
+                        let account = await this.adapter.findOne({
+                            _id: new ObjectID(id)
+						});
+						if (account) {
+                            console.log('-----------------------------------');
+                            console.log(account._id);
+                            console.log(current_user._id);
+                            console.log('-----------------------------------');
+							if (account._id==current_user._id) {
+
+								const doc = await this.adapter.removeById(id);
+                                if (doc){
+                                    // const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                    return {success: true,  status: "User Account deleted."}
+                                } else return { success: false, error_type: "delete_error", status: "An error occured while trying to delete the User Account." };                                
+                            
+							}
+							else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to delete this Account." };
+						} else return { success: false, error_type: "not_found", status: "It seems the account is not available." };
+
+
+                    }
                 }
+
+
 
 
 			},

@@ -359,6 +359,56 @@ export default class ConnectionService extends Service{
 						} else return { success: false, error_type: "not_found", status: "It seems the listing is not available." };
 				}
 				}
+				,
+				deleteAllUserListings: {
+					rest: {
+                        method: "DELETE",
+                        path: "/delete-all-user-listings/:created_by"
+					},
+					params: {
+						created_by: "string"
+					},
+					async handler(ctx) {
+						const created_by = ctx.params.created_by;
+						const current_user = ctx.meta.user;	
+
+
+						if(created_by == current_user._id){
+							const doc = await this.adapter.removeMany(
+								{ 
+									// query: {
+										createdBy: created_by
+									// }
+								});
+							if(doc){
+								return {success: true, status: "All user listings deleted."}
+							} else {
+								console.log('------------------------------');
+								console.log(doc);
+								console.log('------------------------------');
+								return {success: true, status: "No Listings Found on this account."}
+							}
+						} else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to delete this listing." };
+
+                        // let listing = await this.adapter.findOne({
+                        //     _id: new ObjectID(id)
+						// });
+						// if (listing) {
+						// 	if (listing.createdBy==current_user._id) {
+						// 		const doc = await this.adapter.removeById(id);
+						// 		if (doc){
+						// 		const json = await this.transformDocuments(ctx, ctx.params, doc);
+						// 		return {success: true, deletedListing: doc, status: "Listing deleted."}
+						// 		} else return { success: false, error_type: "delete_error", status: "An error occured while trying to delete the listing." };
+
+						// 	}
+						// 	else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to delete this listing." };
+						// } else return { success: false, error_type: "not_found", status: "It seems the listing is not available." };
+				// }
+				}
+
+
+			},
 
 
 			},
