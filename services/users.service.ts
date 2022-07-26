@@ -10,6 +10,7 @@ import HTTPClientService from "moleculer-http-client";
 import DbConnection from "../mixins/db.mixin";
 import { promises as fs } from 'fs';
 import appleSignin from 'apple-signin-auth';
+import { ConfigurationServicePlaceholders } from "aws-sdk/lib/config_service_placeholders";
 
 const { MoleculerError } = require("moleculer").Errors;
 
@@ -1062,14 +1063,33 @@ export default class UsersService extends Service{
 
                                 if (found.login_type != 'email&pass'){
                                     const genCode = Math.random().toString(36).substr(2, 4);
+                                    if(entity.action == "Delete"){
+                                        this.send({
+                                            to: entity.email,
+                                            subject: "Delete account Verification Code",
+                                            html: "This is your verification code for deleting your account <b>" +
+                                                genCode +
+                                                "</b>.",
+                                        });
+                                    } else if (entity.action == "Deactivate"){
+                                        this.send({
+                                            to: entity.email,
+                                            subject: "Deactivate account Verification Code",
+                                            html: "This is your verification code for deactivating your account <b>" +
+                                                genCode +
+                                                "</b>.",
+                                        });
+                                    } else if (entity.action == "Reactivate") {
+                                        this.send({
+                                            to: entity.email,
+                                            subject: "Reactivate account Verification Code",
+                                            html: "This is your verification code for reactivating your account <b>" +
+                                                genCode +
+                                                "</b>.",
+                                        });
+                                    }
 
-                                    this.send({
-                                        to: entity.email,
-                                        subject: "Delete/Deactivation account Verification Code",
-                                        html: "This is your verification code for deleting/deactivating your account <b>" +
-                                            genCode +
-                                            "</b>.",
-                                    });
+                                   
 
                                     const doc = await this.adapter.updateById(
                                         found._id,
@@ -1164,7 +1184,7 @@ export default class UsersService extends Service{
                     }
                 },
                  /**
-                 * Deactivate Account
+                 * Check login type Account
                  *
                  * @param {Object} user - User entity
                  */
