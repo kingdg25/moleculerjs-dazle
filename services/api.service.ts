@@ -115,6 +115,7 @@ export default class ApiService extends Service {
 						"POST auth/delete-account-code": "users.deleteAccountCode",
 						"POST auth/check-delete-account-code": "users.checkDeleteAccountCode",
 						"POST auth/verify-password" : "users.verifyPassword",
+						"GET listings/web-listing-details" : "listings.getWebListingDetails",
 						// "POST email-verification/create": "email_verification.createOrFetchEmailVerification",
 						// "POST email-verification/send-email": "email_verification.sendEmailVerification",
 						// "POST email-verification/create-and-send": "email_verification.createAndSendEmailVerification",

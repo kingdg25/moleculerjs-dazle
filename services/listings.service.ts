@@ -144,6 +144,33 @@ export default class ConnectionService extends Service{
 						} else return { success: false, error_type: "not_found", status: "It seems the listing is not available." };
 					}
 				},
+				getWebListingDetails: {
+					rest: {
+                        method: "GET",
+                        path: "/web-listing-details"
+                    },
+					params: {
+						listing_id: { type: "string" }
+                    },
+					async handler(ctx) {
+						const id = ctx.params.listing_id;
+
+                        let doc = await this.adapter.findOne({
+                            _id: new ObjectID(id)
+						});
+						if (doc) {
+							// if (doc.createdBy==current_user._id || doc.view_type=="public") {
+
+								const json = await this.transformDocuments(ctx, ctx.params, doc);
+								return {success: true, listing: doc, status: "Listing fetched."}
+							// }
+							// else if (await has_connections(current_user, user_connection)) {
+								// TODO: kung naa nay connections
+							// }
+							// else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to view this listing." };
+						} else return { success: false, error_type: "not_found", status: "It seems the listing is not available." };
+					}
+				},
 				getRegions: {
 					rest: {
                         method: "GET",
