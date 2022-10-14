@@ -144,6 +144,32 @@ export default class ConnectionService extends Service{
 						} else return { success: false, error_type: "not_found", status: "It seems the listing is not available." };
 					}
 				},
+				getBrokerWebListings: {
+                    rest: {
+                        method: "GET",
+                        path: "/broker-web-listings"
+                    },
+                    params: {
+						user_id: { type: "string" }
+                    },
+					async handler(ctx) {
+						const listings = [];
+						const uid = ctx.params.user_id
+
+						// get user
+						// await broker.call("users.get", { id: (uid)})
+
+						// get my listings
+						let my_listings = await this.adapter.find({
+							query: {
+								createdBy: uid
+							},
+							sort: { createdAt: -1 },
+						});
+
+						return { success: true, status: "Got My Listings", listings: my_listings };
+                    }
+                },
 				getWebListingDetails: {
 					rest: {
                         method: "GET",

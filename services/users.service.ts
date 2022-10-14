@@ -61,7 +61,10 @@ export default class UsersService extends Service{
                     "email_verified",
                     "about_me",
                     "profile_picture",
-                    "account_status"
+                    "account_status",
+                    "display_mobile_number",
+                    "display_email",
+                    "license_details"
                 ],
 				logging: true,
 
@@ -102,6 +105,9 @@ export default class UsersService extends Service{
                     profile_picture: { type: "string", optional: true},
                     about_me: { type: "string", optional: true},
                     account_status : {type: "string", optional: true},
+                    display_mobile_number: { type: "string", optional: true },
+                    display_email: { type: "email", optional: true },
+                    license_details: {type: "object", optional: true},
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
                 },
@@ -134,8 +140,22 @@ export default class UsersService extends Service{
 
                 // --- ADDITIONAL ACTIONS ---
 
-                // JWT token generator
+               
+                get: {
+					async handler(ctx) {
+						const id = ctx.params.id;
+                        console.log(id);
 
+                        let doc = await this.adapter.findOne({
+                            _id: new ObjectID(id)
+						});
+						if (doc) {
+
+								const json = await this.transformDocuments(ctx, ctx.params, doc);
+								return {success: true, broker_details: doc, status: "User Details fetched."}
+						} else return { success: false, error_type: "not_found", status: "It seems the user profile is not available." };
+					}
+				},
                 getUsersFromListOfIds: { // get users from ids
                     params: {
                         user_ids: "array"
@@ -159,6 +179,7 @@ export default class UsersService extends Service{
                         return users_profiles;
                     }
                 },
+                 // JWT token generator
                 generateJWToken: {
                     params: {
                         user_object: "object"
@@ -1009,7 +1030,10 @@ export default class UsersService extends Service{
                                         mobile_number: entity.mobile_number,
                                         about_me: entity.about_me,
                                         profile_picture: entity.profile_picture,
-                                        broker_license_number: entity.broker_license_number
+                                        broker_license_number: entity.broker_license_number,
+                                        display_mobile_number: entity.display_mobile_number,
+                                        display_email: entity.display_email,
+                                        license_details: entity.license_details
                                     
                                     }
                                 }
