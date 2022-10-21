@@ -990,62 +990,35 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const entity = ctx.params.user;
-                        
+
                         const found = await this.adapter.findOne({
                             _id: new ObjectID(entity._id)
                         });
                         if (found) {
                             if ( entity.position == "Salesperson" ) {
                                 // check salesperson broker
-                                //TODO: Aadd a checker if Sale' Broker exist if not send invitation
+                                const brokerFound = await this.adapter.findOne({
+                                    broker_license_number: entity.broker_license_number,
+                                    position: "Broker"
+                                });
+                                
+                            }
+                            else if ( entity.position == "Broker" ) {
+                                // check broker license number
                                 const brokerLicenseNumberFound = await this.adapter.findOne({
-                                    position: "Salesperson",
-                                    $or:[
-                                        {'license_details.Sales RES Accreditation No': entity.license_details['Sales RES Accreditation No']},
-                                        {'license_details.Sales RES PRC Id No': entity.license_details['Sales RES PRC Id No']},
-                                        {'license_details.Sales REB PTR No': entity.license_details['Sales REB PTR No']},
-                                        {'license_details.Sales AIPO No': entity.license_details['Sales AIPO No']}
-                                    ]
-                                    
+                                    broker_license_number: entity.broker_license_number,
+                                    position: "Broker"
                                 });
                                 if (brokerLicenseNumberFound) {
                                     if(brokerLicenseNumberFound._id != entity._id){
                                         return {
                                             success: false,
                                             error_type: "broker_exist",
-                                            status: "Salesperson License Details already exist",
+                                            status: "Broker already exist",
                                         };
                                     }
                                     
-                                } 
-                            }
-                            else if ( entity.position == "Broker" ) {
-                                // check broker license number
-                                if(entity.license_details != null){
-                                    console.log('INSIDE Checking of license number');
-                                    const brokerLicenseNumberFound = await this.adapter.findOne({
-                                        // broker_license_number: entity.broker_license_number,
-                                        position: "Broker",
-                                        $or:[
-                                            {'license_details.REB PRC License No': entity.license_details['REB PRC License No']},
-                                            {'license_details.REB PRC Id No': entity.license_details['REB PRC Id No']},
-                                            {'license_details.REB PTR No': entity.license_details['REB PTR No']},
-                                            {'license_details.DHSUD No': entity.license_details['DHSUD No']},
-                                            {'license_details.AIPO No': entity.license_details['AIPO No']}
-                                        ]
-                                    });
-                                    if (brokerLicenseNumberFound) {
-                                        if(brokerLicenseNumberFound._id != entity._id){
-                                            return {
-                                                success: false,
-                                                error_type: "broker_exist",
-                                                status: "Broker License Details already exist",
-                                            };
-                                        }
-                                        
-                                    } 
                                 }
-                               
                             }
 
                             const doc = await this.adapter.updateById(
@@ -1061,6 +1034,7 @@ export default class UsersService extends Service{
                                         display_mobile_number: entity.display_mobile_number,
                                         display_email: entity.display_email,
                                         license_details: entity.license_details
+                                    
                                     }
                                 }
                             );
