@@ -388,6 +388,10 @@ export default class UsersService extends Service{
 
                         // check user
                         if (found) {
+                            //  check if account is registered using email and pass if not return an error
+                            if(found.login_type != 'email&pass'){
+                                return { success: false, error_type: "not_found", user: auth, status: "This account was registered using either Facebook, Google, or Apple Quick Signup." };
+                            }
                             // check password
                             if ( (await bcrypt.compare(auth.password, found.password)) ) {
                                 // check if user is invited
@@ -545,6 +549,8 @@ export default class UsersService extends Service{
                         const entity = ctx.params.user;
                         console.log("ENENENEITITITT")
                         console.log(entity)
+                        
+                        
 
                         if (!entity.email && entity.login_type !== "apple") {
                             return { success: false, error_type: "missing_data", status: "No email found." };
@@ -553,6 +559,10 @@ export default class UsersService extends Service{
                         let found = await this.adapter.findOne({
                             email: entity.email,
                         });
+
+                        if(found.login_type == 'email&pass'){
+                            return { success: false, error_type: "not_found", status: "This account was registered with Email and Password" }
+                        }
 
                         if (found) {
                             // check user required fields on social logins
@@ -997,7 +1007,8 @@ export default class UsersService extends Service{
                         if (found) {
                             if ( entity.position == "Salesperson" ) {
                                 // check salesperson broker
-                                //TODO: Aadd a checker if Sale' Broker exist if not send invitation
+                                if(entity.license_details != null){
+                                      //TODO: Aadd a checker if Sale' Broker exist if not send invitation - GIO
                                 const brokerLicenseNumberFound = await this.adapter.findOne({
                                     position: "Salesperson",
                                     $or:[
@@ -1018,6 +1029,8 @@ export default class UsersService extends Service{
                                     }
                                     
                                 } 
+                                }
+                              
                             }
                             else if ( entity.position == "Broker" ) {
                                 // check broker license number
