@@ -552,18 +552,31 @@ export default class UsersService extends Service{
                         
                         
 
-                        if (!entity.email && entity.login_type !== "apple") {
-                            return { success: false, error_type: "missing_data", status: "No email found." };
+                        // if (!entity.email && entity.login_type !== "apple") {
+                        //     return { success: false, error_type: "missing_data", status: "No email found." };
+                        // }
+                        
+
+                        if (!entity.email && entity.login_type === "apple") {
+                            const tokenVerification:any = await verifyAppleIdToken({
+                                idToken: entity.token,
+                                clientId: 'com.brooky.dazle'
+                            });
+                            if (tokenVerification.email) {
+                                entity.email = tokenVerification.email
+                            }
                         }
 
                         let found = await this.adapter.findOne({
                             email: entity.email,
                         });
 
+                        // Return and error of account is not registered using social sign in 
                         if(found.login_type == 'email&pass'){
                             return { success: false, error_type: "not_found", status: "This account was registered with Email and Password" }
                         }
-
+                        
+                        //if social login is already registered
                         if (found) {
                             // check user required fields on social logins
                             if( found.mobile_number && found.position) {
@@ -586,7 +599,7 @@ export default class UsersService extends Service{
                                 // }
 
                                 // return { success: false, error_type: "pending", user: found, status: "Your account status is currently pending" };
-                            }
+                            } else 
 
                             return { success: false, error_type: "no_setup_profile", user: found, status: `${found.login_type} login fail` };
                         }
