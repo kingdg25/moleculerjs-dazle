@@ -577,13 +577,15 @@ export default class UsersService extends Service{
                         console.log(found);
                         console.log('=========================================');
 
-                        // Return and error of account is not registered using social sign in 
+                       
+                        
+                        //if social login is already registered
+                        if (found) {    
+
+                             // Return and error of account is not registered using social sign in 
                         if(found.login_type == 'email&pass'){
                             return { success: false, error_type: "not_found", status: "This account was registered with Email and Password" }
                         }
-                        
-                        //if social login is already registered
-                        if (found) {
                             // check user required fields on social logins
                             if( found.mobile_number && found.position) {
                                 // check if user is invited
