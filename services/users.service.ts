@@ -563,6 +563,9 @@ export default class UsersService extends Service{
                                 clientId: 'com.brooky.dazle'
                             });
                             if (tokenVerification.email) {
+                                console.log('=========================================');
+                                console.log(tokenVerification.email);
+                                console.log('=========================================');
                                 entity.email = tokenVerification.email
                             }
                         }
@@ -570,6 +573,9 @@ export default class UsersService extends Service{
                         let found = await this.adapter.findOne({
                             email: entity.email,
                         });
+                        console.log('=========================================');
+                        console.log(found);
+                        console.log('=========================================');
 
                         // Return and error of account is not registered using social sign in 
                         if(found.login_type == 'email&pass'){
