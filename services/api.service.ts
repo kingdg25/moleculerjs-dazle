@@ -133,6 +133,7 @@ export default class ApiService extends Service {
 						"GET listings/web-listing-details" : "listings.getWebListingDetails",
 						"GET listings/broker-web-listings" : "listings.getBrokerWebListings",
 						"GET auth/broker-details" : "users.get",
+						"GET auth/broker-by-username" : "users.getByUsername",
 						// "POST email-verification/create": "email_verification.createOrFetchEmailVerification",
 						// "POST email-verification/send-email": "email_verification.sendEmailVerification",
 						// "POST email-verification/create-and-send": "email_verification.createAndSendEmailVerification",

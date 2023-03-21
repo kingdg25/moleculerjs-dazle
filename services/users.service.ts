@@ -64,7 +64,9 @@ export default class UsersService extends Service{
                     "account_status",
                     "display_mobile_number",
                     "display_email",
-                    "license_details"
+                    "license_details",
+                    "account_type",
+                    "username"
                 ],
 				logging: true,
 
@@ -108,6 +110,8 @@ export default class UsersService extends Service{
                     display_mobile_number: { type: "string", optional: true },
                     display_email: { type: "email", optional: true },
                     license_details: {type: "object", optional: true},
+                    account_type: {type: "string", default: 'Basic'},
+                    username: {type: "string", optional: true},
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
                 },
@@ -156,6 +160,23 @@ export default class UsersService extends Service{
 						} else return { success: false, error_type: "not_found", status: "It seems the user profile is not available." };
 					}
 				},
+
+                getByUsername: {
+					async handler(ctx) {
+						const username = ctx.params.username;
+                        console.log('username==========================================>',username);
+
+                        let doc = await this.adapter.findOne({
+                            username: username
+						});
+						if (doc) {
+
+								const json = await this.transformDocuments(ctx, ctx.params, doc);
+								return {success: true, broker_details: doc, status: "User Details fetched."}
+						} else return { success: false, error_type: "not_found", status: "It seems the user profile is not available." };
+					}
+				},
+
                 getUsersFromListOfIds: { // get users from ids
                     params: {
                         user_ids: "array"
@@ -241,6 +262,9 @@ export default class UsersService extends Service{
                                 status: "Email already exist",
                             };
                         }
+
+                        
+                        
 
                         // for salesperson only
                         if ( entity.position == "Salesperson" ) {
@@ -1021,6 +1045,23 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const entity = ctx.params.user;
+                       
+                        // check username 
+                        if(entity.username){
+                            const usernameCheck = await this.adapter.findOne({
+                                username: entity.username,
+                            });
+                            if(usernameCheck){
+                                if (usernameCheck._id != entity._id) {
+                                    return {
+                                        success: false,
+                                        error_type: "username_exist",
+                                        status: "Username already exist",
+                                    };
+                                }
+                            }
+                            
+                        }
                         
                         const found = await this.adapter.findOne({
                             _id: new ObjectID(entity._id)
@@ -1088,13 +1129,14 @@ export default class UsersService extends Service{
                                     $set: {
                                         firstname: entity.firstname,
                                         lastname: entity.lastname,
+                                        username: entity.username,
                                         mobile_number: entity.mobile_number,
                                         about_me: entity.about_me,
                                         profile_picture: entity.profile_picture,
                                         broker_license_number: entity.broker_license_number,
                                         display_mobile_number: entity.display_mobile_number,
                                         display_email: entity.display_email,
-                                        license_details: entity.license_details
+                                        license_details: entity.license_details,
                                     }
                                 }
                             );
