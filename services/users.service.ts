@@ -66,7 +66,7 @@ export default class UsersService extends Service{
                     "display_email",
                     "license_details",
                     "account_type",
-                    "username"
+                    "username",
                 ],
 				logging: true,
 
@@ -153,6 +153,8 @@ export default class UsersService extends Service{
                         let doc = await this.adapter.findOne({
                             _id: new ObjectID(id)
 						});
+                        console.log('doc found======================>', doc);
+                        
 						if (doc) {
 
 								const json = await this.transformDocuments(ctx, ctx.params, doc);
@@ -1045,6 +1047,9 @@ export default class UsersService extends Service{
                     /** @param {Context} ctx  */
                     async handler(ctx) {
                         const entity = ctx.params.user;
+
+                        console.log('ENTITY ==============>', entity);
+                        
                        
                         // check username 
                         if(entity.username){
@@ -1066,6 +1071,8 @@ export default class UsersService extends Service{
                         const found = await this.adapter.findOne({
                             _id: new ObjectID(entity._id)
                         });
+                        console.log('ACCOUNT TO EDIT =========================>', found);
+                        
                         if (found) {
                             if ( entity.position == "Salesperson" ) {
                                 // check salesperson broker
@@ -1123,27 +1130,52 @@ export default class UsersService extends Service{
                                
                             }
 
-                            const doc = await this.adapter.updateById(
-                                found._id,
-                                {
-                                    $set: {
-                                        firstname: entity.firstname,
-                                        lastname: entity.lastname,
-                                        username: entity.username,
-                                        mobile_number: entity.mobile_number,
-                                        about_me: entity.about_me,
-                                        profile_picture: entity.profile_picture,
-                                        broker_license_number: entity.broker_license_number,
-                                        display_mobile_number: entity.display_mobile_number,
-                                        display_email: entity.display_email,
-                                        license_details: entity.license_details,
+                            if(entity.username){
+                                const doc = await this.adapter.updateById(
+                                    found._id,
+                                    {
+                                        $set: {
+                                            firstname: entity.firstname,
+                                            lastname: entity.lastname,
+                                            username: entity.username,
+                                            mobile_number: entity.mobile_number,
+                                            about_me: entity.about_me,
+                                            profile_picture: entity.profile_picture,
+                                            broker_license_number: entity.broker_license_number,
+                                            display_mobile_number: entity.display_mobile_number,
+                                            display_email: entity.display_email,
+                                            license_details: entity.license_details,
+                                        }
                                     }
-                                }
-                            );
-                            const json = await this.transformDocuments(ctx, ctx.params, doc);
-                            await this.entityChanged("updated", json, ctx);
+                                );
+                                const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                await this.entityChanged("updated", json, ctx);
+    
+                                return { success: true, user: json, status: "Update Success" };
+                            } else {
+                                const doc = await this.adapter.updateById(
+                                    found._id,
+                                    {
+                                        $set: {
+                                            firstname: entity.firstname,
+                                            lastname: entity.lastname,
+                                            mobile_number: entity.mobile_number,
+                                            about_me: entity.about_me,
+                                            profile_picture: entity.profile_picture,
+                                            broker_license_number: entity.broker_license_number,
+                                            display_mobile_number: entity.display_mobile_number,
+                                            display_email: entity.display_email,
+                                            license_details: entity.license_details,
+                                        }
+                                    }
+                                );
+                                const json = await this.transformDocuments(ctx, ctx.params, doc);
+                                await this.entityChanged("updated", json, ctx);
+    
+                                return { success: true, user: json, status: "Update Success" };
+                            }
 
-                            return { success: true, user: json, status: "Update Success" };
+                            
                         }
 
                         return { success: false, error_type: "not_found", status: "Update Fail" };
