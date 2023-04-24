@@ -93,6 +93,26 @@ export default class ConnectionService extends Service{
 					ownership: { type: "string", optional: true, default: () => ""  },
                     createdAt: { type: "date", default: () => new Date() },
                     updatedAt: { type: "date", default: () => new Date() },
+					created_in: {type: "string", optional: true},
+					property_subtype: {type: "string", optional: true},
+					outdoor: {
+                        type: "array",
+                        optional: true,
+                        items: {
+                            type: "string"
+                        },
+						default: []
+                    },
+					indoor: {
+                        type: "array",
+                        optional: true,
+                        items: {
+                            type: "string"
+                        },
+						default: []
+                    },
+					foreclosure: {type: "string", optional: true},
+					pre_selling: {type: "string", optional: true},
 				  }
 			},
 			hooks: {
