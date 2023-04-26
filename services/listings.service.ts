@@ -76,7 +76,7 @@ export default class ConnectionService extends Service{
 					// number_of_bathrooms: { type: "string", convert: true, integer: true, default: () => 0 },
 					number_of_bathrooms: { type: "number", convert: true,  optional: true, default: 0  },
 					number_of_parking_space: { type: "string", optional: true, default: () => "0" },
-					total_area: { type: "number", convert: true, positive: true, default: 0.0 },
+					total_area: { type: "number", convert: true, positive: true, default: 0.0, optional: true },
 					is_your_property: { type: "string", optional: true, default: () => ""  },  // is the property furnished ? or not ?
 					district: { type: "string", optional: true },
 					city: { type: "string" },
