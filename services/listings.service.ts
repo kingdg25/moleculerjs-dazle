@@ -114,6 +114,7 @@ export default class ConnectionService extends Service{
                     },
 					foreclosure: {type: "string", optional: true},
 					pre_selling: {type: "string", optional: true},
+					sold: {type: "boolean", optional: true}
 				  }
 			},
 			hooks: {
