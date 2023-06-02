@@ -395,7 +395,7 @@ export default class ConnectionService extends Service{
 						});
 						if (listing) {
 							// if (listing.createdBy === current_user._id) {
-								console.log('CREATED BY ID HERE====>', listing.created_by)
+								console.log('CREATED BY ID HERE====>', listing.createdBy)
 								const doc = await this.adapter.updateById(
 									listing._id,
 									{
