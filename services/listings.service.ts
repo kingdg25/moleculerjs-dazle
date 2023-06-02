@@ -394,7 +394,7 @@ export default class ConnectionService extends Service{
                             _id: new ObjectID(listing_id)
 						});
 						if (listing) {
-							// if (listing.createdBy === current_user._id) {
+							if (listing.createdBy === current_user._id) {
 								console.log('CREATED BY ID HERE====>', listing.createdBy)
 								const doc = await this.adapter.updateById(
 									listing._id,
@@ -405,7 +405,7 @@ export default class ConnectionService extends Service{
 								const json = await this.transformDocuments(ctx, ctx.params, doc);
 								await this.entityChanged("updated", json, ctx);
 								return { success: true, listing: json, status: "Update Success" };
-							// } else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to update this listing." };
+							} else return { success: false, error_type: "not_allowed", status: "It seems the user is not allowed to update this listing." };
 						}
 						return { success: false, error_type: "not_found", status: "Update Fail" };
 					}
